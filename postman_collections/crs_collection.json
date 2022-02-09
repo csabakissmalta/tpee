@@ -1,0 +1,444 @@
+{
+	"info": {
+		"_postman_id": "f15d2a7d-8270-442d-bef1-ec862d66e388",
+		"name": "CRS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "post_CRS_manual_update",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerId\": 766820,\n  \"uuid\": \"65cb5013-34f4-4941-a122-8e78cbf55ae4\",\n  \"ratingManualLive\": \"2A\",\n  \"ratingManualPregame\": \"2B\"\n}"
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v0/customer-rating/manual/",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v0",
+						"customer-rating",
+						"manual",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_CRS_auto_update",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"customerId\": 766820,\n    \"uuid\": \"65cb5013-34f4-4941-a122-8e78cbf55ae4\",\n    \"ratingLive\": \"3A\",\n    \"generatedTimeLive\": \"2017-09-22T00:11:22.9999\",\n    \"ratingPregame\": \"3B\",\n    \"generatedTimePregame\": \"2017-09-22T00:11:12.22222\"\n  }\n]"
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v0/customer-rating/auto/",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v0",
+						"customer-rating",
+						"auto",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_CRS_marketing_update",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "showPassword",
+							"value": false,
+							"type": "boolean"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"customerId\": 775720,\n    \"uuid\": \"6c041af7-f37a-4b1e-868f-73a1a81b2311\",\n    \"marketingRating\": \"888\",\n    \"generatedTime\": \"2021-08-22T00:11:11\"\n  }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v0/customer-rating/marketing",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v0",
+						"customer-rating",
+						"marketing"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_CRS_customers_by_id",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[100,60115920,766820]"
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v0/customer-rating/customer/",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v0",
+						"customer-rating",
+						"customer",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_CRS_customers_by_uuid",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\"65cb5013-34f4-4941-a122-8e78cbf55ae4\", \"ed2578d5-3991-4487-aa65-f9db1511d9dc\", \"aaa6c5f4-089f-4a69-87db-6c20160ece53\"]"
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v1/customer-rating/customer/",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v1",
+						"customer-rating",
+						"customer",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_CRS_customer_by_id",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "showPassword",
+							"value": false,
+							"type": "boolean"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v0/customer-rating/customer/:customerId",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v0",
+						"customer-rating",
+						"customer",
+						":customerId"
+					],
+					"variable": [
+						{
+							"key": "customerId",
+							"value": "766820"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_CRS_customer_by_uuid",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "showPassword",
+							"value": false,
+							"type": "boolean"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v1/customer-rating/customer/:uuid",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v1",
+						"customer-rating",
+						"customer",
+						":uuid"
+					],
+					"variable": [
+						{
+							"key": "uuid",
+							"value": "65cb5013-34f4-4941-a122-8e78cbf55ae4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_CRS_cashout_segments_update",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"uuid\": \"65cb5013-34f4-4941-a122-8e78cbf55ae4\",\n        \"cashoutRatingValue\": \"1\",\n        \"cashoutRatingType\": \"SINGLE\",\n        \"generatedTime\": \"2021-10-01T00:11:11.11111\"\n    },\n    {\n        \"uuid\": \"65cb5013-34f4-4941-a122-8e78cbf55ae4\",\n        \"cashoutRatingValue\": \"2\",\n        \"cashoutRatingType\": \"SYSTEM\",\n        \"generatedTime\": \"2021-10-01T00:11:22.11111\"\n    },\n    {\n        \"uuid\": \"65cb5013-34f4-4941-a122-8e78cbf55ae4\",\n        \"cashoutRatingValue\": \"3\",\n        \"cashoutRatingType\": \"MULTI\",\n        \"generatedTime\": \"2021-10-01T00:11:33.11111\"\n    }\n]"
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v1/customer-rating/cashout/",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v1",
+						"customer-rating",
+						"cashout",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_CRS_cashout_segments",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "rest_user",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "cC732eYbZ9YzBVHE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{customer-rating-service-url}}/v1/customer-rating/cashout/:uuid",
+					"host": [
+						"{{customer-rating-service-url}}"
+					],
+					"path": [
+						"v1",
+						"customer-rating",
+						"cashout",
+						":uuid"
+					],
+					"variable": [
+						{
+							"key": "uuid",
+							"value": "65cb5013-34f4-4941-a122-8e78cbf55ae4"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
