@@ -1,9 +1,13 @@
 package request
 
-type Request struct {
-	Auth   Auth     `json:"auth"`
-	Method string   `json:"method"`
-	Header []Header `json:"header"`
-	Body   Body     `json:"body"`
-	URL    URL      `json:"url"`
+import (
+	"net/http"
+
+	"github.com/csabakissmalta/tpee/postman"
+)
+
+// Mostly the executable request's lifecycle-related operations
+
+func ComposeHttpRequest(r *postman.Request) *http.Request {
+	return nil
 }

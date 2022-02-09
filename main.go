@@ -4,16 +4,16 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/csabakissmalta/tpee/request"
+	"github.com/csabakissmalta/tpee/postman"
 )
 
-func load_coll(p string) request.PostmanSchemaJson {
+func load_coll(p string) postman.PostmanSchemaJson {
 	bts, e := ioutil.ReadFile(p)
 	if e != nil {
 		log.Fatal("couldn't load the file")
 	}
 
-	collection := request.PostmanSchemaJson{}
+	collection := postman.PostmanSchemaJson{}
 	collection.UnmarshalJSON(bts)
 	return collection
 }
@@ -30,7 +30,7 @@ func main() {
 		// }
 		for k := range i.(map[string]interface{}) {
 			if k == "request" {
-				r := i.(map[string]interface{})[k].(request.Request)
+				r := i.(map[string]interface{})[k].(postman.Request)
 				log.Println(r)
 			}
 		}

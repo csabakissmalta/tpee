@@ -4,15 +4,21 @@
 // Single task should never block on itself.
 package task
 
-type ITask interface {
-	Execute() error
-	Report(interface{}) interface{}
-}
+import (
+	"net/http"
+
+	"github.com/csabakissmalta/tpee/postman"
+)
 
 type Task struct {
+	// A request to be executed
+	Request postman.Request
+
+	// Executed
+	Executed bool
 }
 
-func (ts *Task) Execute() error {
+func (ts *Task) Execute(c *http.Client) error {
 	return nil
 }
 

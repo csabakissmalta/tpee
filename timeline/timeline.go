@@ -24,6 +24,9 @@ type Timeline struct {
 
 	// Execution details
 	Exec Exec
+
+	// Current Task
+	CurrectTask *task.Task
 }
 
 func (t *Timeline) Populate(e *Exec) {
