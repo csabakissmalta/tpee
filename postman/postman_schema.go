@@ -534,7 +534,7 @@ type ItemGroup struct {
 
 	// Items are entities which contain an actual HTTP request, and sample responses
 	// attached to it. Folders may contain many items.
-	Item []ItemRequest `json:"item"`
+	Items []Item `json:"item"`
 
 	// A folder's friendly name is defined by this field. You would want to set this
 	// field to a value that would allow you to easily identify this folder.
@@ -550,8 +550,6 @@ type ItemGroup struct {
 
 type ItemGroupDescription interface{}
 
-type ItemRequest interface{}
-
 type Postman struct {
 	// Auth corresponds to the JSON schema field "auth".
 	Auth interface{} `json:"auth,omitempty"`
@@ -565,7 +563,7 @@ type Postman struct {
 	// Items are the basic unit for a Postman collection. You can think of them as
 	// corresponding to a single API endpoint. Each Item has one request and may have
 	// multiple API responses associated with it.
-	Item []ItemRequest `json:"item"`
+	Items []Item `json:"item"`
 
 	// ProtocolProfileBehavior corresponds to the JSON schema field
 	// "protocolProfileBehavior".
