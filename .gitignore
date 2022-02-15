@@ -2,3 +2,4 @@
 .idea/
 *.log
 .gen_code/
+.gen_code/*
