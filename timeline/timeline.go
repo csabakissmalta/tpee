@@ -6,7 +6,7 @@ import "github.com/csabakissmalta/tpee/task"
 
 // Execution parameters for the timeline
 // Loaded from a config, ideally
-type Exec struct {
+type ExecRules struct {
 	// frequency aka RPS
 	Frequency int64
 
@@ -23,12 +23,12 @@ type Timeline struct {
 	Tasks chan *task.Task
 
 	// Execution details
-	Exec Exec
+	Rules ExecRules
 
 	// Current Task
 	CurrectTask *task.Task
 }
 
-func (t *Timeline) Populate(e *Exec) {
+func (t *Timeline) Populate() {
 
 }
