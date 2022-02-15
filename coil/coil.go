@@ -14,10 +14,32 @@ type Coil struct {
 	Timelines []timeline.Timeline
 }
 
+type Option func(*Coil)
+
+func WithContext(ctx context.Context) Option {
+	return func(c *Coil) {
+		c.Ctx = ctx
+	}
+}
+
+func WithTimelines(tls []timeline.Timeline) Option {
+	return func(c *Coil) {
+		c.Timelines = tls
+	}
+}
+
+func New(option ...Option) *Coil {
+	c := &Coil{}
+	for _, o := range option {
+		o(c)
+	}
+	return c
+}
+
 // It is a consumer of tasks relying on the main loop and context.
 // It controls only the exact execution of the timeline
 // Should start always from the first element and progressively consume the tasks.
-func (c *Coil) Start(t timeline.Timeline) error {
+func (c *Coil) Start() error {
 	var e error
 	for {
 		if e != nil {
@@ -31,6 +53,6 @@ func (c *Coil) Start(t timeline.Timeline) error {
 // 1. out of tasks
 // 2. exeception
 // 3. condition based termination
-func (c *Coil) Stop(t timeline.Timeline) error {
+func (c *Coil) Stop() error {
 	return nil
 }
