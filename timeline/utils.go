@@ -69,11 +69,12 @@ func check_postman_request_and_validate_requirements(pr *postman.Request, env []
 	}
 
 	// check Headers
-	for _, hdr := range pr.Header {
+	for k, hdr := range pr.Header {
 		e = validate_and_substitute(&hdr.Value, r, env)
 		if e != nil {
 			return e
 		}
+		pr.Header[k].Value = hdr.Value
 	}
 	// check body
 	if len(pr.Body.Raw) > 0 {
@@ -82,8 +83,23 @@ func check_postman_request_and_validate_requirements(pr *postman.Request, env []
 			return e
 		}
 	}
-	// if pr.Body.Formdata != nil {
-	// 	for
-	// }
+	if len(pr.Body.Formdata) > 0 {
+		for l, fd := range pr.Body.Formdata {
+			e = validate_and_substitute(&fd.Value, r, env)
+			if e != nil {
+				return e
+			}
+			pr.Body.Formdata[l].Value = fd.Value
+		}
+	}
+	if len(pr.Body.Urlencoded) > 0 {
+		for l, ue := range pr.Body.Urlencoded {
+			e = validate_and_substitute(&ue.Value, r, env)
+			if e != nil {
+				return e
+			}
+			pr.Body.Urlencoded[l].Value = ue.Value
+		}
+	}
 	return nil
 }
