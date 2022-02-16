@@ -49,6 +49,10 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 		log.Fatalf("DATA ERROR: %s", e.Error())
 	}
 
+	// check env elements and load feeds if there is any feedValue type
+	timeline_dimension := (dur - t.Rules.DelaySeconds) * t.Rules.Frequency
+	load_feeds_if_required(timeline_dimension, env)
+
 	// Create time markers - empty tasks
 	t.Tasks = calc_periods(dur, t.Rules, r)
 

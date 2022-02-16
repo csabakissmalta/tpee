@@ -1,7 +1,10 @@
 package timeline
 
 import (
+	"encoding/csv"
 	"fmt"
+	"log"
+	"os"
 	"regexp"
 	"strings"
 
@@ -12,6 +15,39 @@ import (
 )
 
 var r = regexp.MustCompile(`[\{]{2}(.{1,32})[\}]{2}`)
+
+type Feed struct {
+	Name  string
+	Value chan interface{}
+}
+
+func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
+	f := &Feed{
+		Name:  e.Key,
+		Value: make(chan interface{}, dim),
+	}
+	// determine feed file type
+	f_name := strings.Split(e.Value, "|")[1]
+	f_extension := strings.Split(f_name, ".")[1]
+	switch f_extension {
+	case "csv":
+		f, err := os.Open(f_name)
+		if err != nil {
+			log.Fatalf("DATA READ ERROR: cannot open feed file %s. %s", f_name, err.Error())
+		}
+		csvReader := csv.NewReader(f)
+		rec, err := csvReader.ReadAll()
+		if err != nil {
+			log.Fatalf("DATA READ ERROR: cannot read file %s. %s", f_name, err.Error())
+		}
+		log.Println(rec[0], rec[1])
+	case "json":
+	case "txt":
+	default:
+		return f
+	}
+	return f
+}
 
 func calc_periods(dur int, er *execconf.ExecRequestsElem, rq *postman.Request) chan *task.Task {
 	// the count of markers is (duration - delay) * frequency
@@ -35,6 +71,15 @@ func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) (bool,
 		}
 	}
 	return false, ""
+}
+
+func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) ([]*Feed, error) {
+	for _, envElem := range env {
+		if *envElem.Type == execconf.FEED_VALUE {
+			load_feed(dim, envElem)
+		}
+	}
+	return nil, nil
 }
 
 func validate_and_substitute(src *string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) error {
