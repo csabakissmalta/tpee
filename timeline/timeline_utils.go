@@ -26,21 +26,31 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 		Name:  e.Key,
 		Value: make(chan interface{}, dim),
 	}
-	// determine feed file type
+	// determine feed file type and load the file accordingly
 	f_name := strings.Split(e.Value, "|")[1]
 	f_extension := strings.Split(f_name, ".")[1]
 	switch f_extension {
 	case "csv":
-		f, err := os.Open(f_name)
+		var rec_index int
+		file, err := os.Open(f_name)
 		if err != nil {
 			log.Fatalf("DATA READ ERROR: cannot open feed file %s. %s", f_name, err.Error())
 		}
-		csvReader := csv.NewReader(f)
+		csvReader := csv.NewReader(file)
 		rec, err := csvReader.ReadAll()
 		if err != nil {
 			log.Fatalf("DATA READ ERROR: cannot read file %s. %s", f_name, err.Error())
 		}
-		log.Println(rec[0], rec[1])
+		csv_header := rec[0]
+		for idx, hkey := range csv_header {
+			if hkey == e.Key {
+				rec_index = idx
+				break
+			}
+		}
+		for i := 0; i < dim; i++ {
+			f.Value <- rec[rec_index]
+		}
 	case "json":
 	case "txt":
 	default:
@@ -73,13 +83,15 @@ func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) (bool,
 	return false, ""
 }
 
-func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) ([]*Feed, error) {
+func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) []*Feed {
+	fds := []*Feed{}
 	for _, envElem := range env {
 		if *envElem.Type == execconf.FEED_VALUE {
-			load_feed(dim, envElem)
+			fd := load_feed(dim, envElem)
+			fds = append(fds, fd)
 		}
 	}
-	return nil, nil
+	return fds
 }
 
 func validate_and_substitute(src *string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) error {
