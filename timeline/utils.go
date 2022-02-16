@@ -53,17 +53,19 @@ func check_postman_request_and_validate_requirements(pr *postman.Request, env []
 	if e != nil {
 		return e
 	}
-	for _, h := range pr.URL.Host {
+	for i, h := range pr.URL.Host {
 		e = validate_and_substitute(&h, r, env)
 		if e != nil {
 			return e
 		}
+		pr.URL.Host[i] = h
 	}
-	for _, p := range pr.URL.Path {
+	for j, p := range pr.URL.Path {
 		e = validate_and_substitute(&p, r, env)
 		if e != nil {
 			return e
 		}
+		pr.URL.Path[j] = p
 	}
 
 	// check Headers
