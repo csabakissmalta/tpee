@@ -3,22 +3,10 @@
 package timeline
 
 import (
+	execconf "github.com/csabakissmalta/tpee/exec"
 	"github.com/csabakissmalta/tpee/postman"
 	"github.com/csabakissmalta/tpee/task"
 )
-
-// Execution parameters for the timeline
-// Loaded from a config, ideally
-type ExecRules struct {
-	// Duration
-	DurationSec int64
-
-	// frequency aka RPS
-	Frequency int64
-
-	// delay
-	Delay int64
-}
 
 type Timeline struct {
 	// Name - identical/matching with the tasks name
@@ -29,13 +17,13 @@ type Timeline struct {
 	Tasks chan *task.Task
 
 	// Execution details
-	Rules ExecRules
+	Rules execconf.ExecRequestsElem
 
 	// Current Task
 	CurrectTask *task.Task
 }
 
-func (t *Timeline) Populate(r *postman.Request) {
+func (t *Timeline) Populate(dur int, r *postman.Request) {
 	// Create time markers - empty tasks
-	calc_periods(&t.Rules, r)
+	calc_periods(dur, &t.Rules, r)
 }
