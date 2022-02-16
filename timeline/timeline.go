@@ -5,6 +5,7 @@ package timeline
 import (
 	execconf "github.com/csabakissmalta/tpee/exec"
 	"github.com/csabakissmalta/tpee/postman"
+	"github.com/csabakissmalta/tpee/request"
 	"github.com/csabakissmalta/tpee/task"
 )
 
@@ -42,4 +43,10 @@ func New(option ...Option) *Timeline {
 func (t *Timeline) Populate(dur int, r *postman.Request) {
 	// Create time markers - empty tasks
 	t.Tasks = calc_periods(dur, t.Rules, r)
+
+	// pre-process the tasks and check dependencies
+	for tsk := range t.Tasks {
+		request.ComposeHttpRequest(tsk.Request)
+		t.Tasks <- tsk
+	}
 }

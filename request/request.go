@@ -1,6 +1,7 @@
 package request
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/csabakissmalta/tpee/postman"
@@ -9,5 +10,15 @@ import (
 // Mostly the executable request's lifecycle-related operations
 
 func ComposeHttpRequest(r *postman.Request) *http.Request {
+	log.Println(r.Method)
+	log.Println(r.Auth)
+	log.Println(r.Body)
+	log.Println(r.Header)
+	log.Println(r.URL)
+
+	// r_res := &http.Request{
+	// 	Method: r.Method,
+	// 	URL: ,
+	// }
 	return nil
 }
