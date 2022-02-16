@@ -3,6 +3,7 @@ package timeline
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 
@@ -24,13 +25,13 @@ func calc_periods(dur int, er *execconf.ExecRequestsElem, rq *postman.Request) c
 	return ch
 }
 
-func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) bool {
+func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) (bool, string) {
 	for _, envElem := range env {
 		if envElem.Key == vname && len(envElem.Value) > 0 {
-			return true
+			return true, envElem.Value
 		}
 	}
-	return false
+	return false, ""
 }
 
 func check_postman_request_and_validate_requirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
@@ -38,25 +39,31 @@ func check_postman_request_and_validate_requirements(pr *postman.Request, env []
 	// check URL
 	match := r.FindStringSubmatch(pr.URL.Raw)
 	if len(match) > 1 {
-		if !check_env_var_set(match[1], env) {
+		exists, val := check_env_var_set(match[1], env)
+		if !exists {
 			return fmt.Errorf("%s env variable for URL: %s is not set", match[1], pr.URL.Raw)
 		}
+		pr.URL.Raw = strings.Replace(pr.URL.Raw, match[0], val, -1)
 	}
 	// check Headers
 	for _, hdr := range pr.Header {
 		match = r.FindStringSubmatch(hdr.Value)
 		if len(match) > 1 {
-			if !check_env_var_set(match[1], env) {
+			exists, val := check_env_var_set(match[1], env)
+			if !exists {
 				return fmt.Errorf("%s env variable for Hedaer: %s is not set", match[1], hdr.Key)
 			}
+			hdr.Value = strings.Replace(hdr.Value, match[0], val, -1)
 		}
 	}
 	// check body
 	match = r.FindStringSubmatch(pr.Body.Raw)
 	if len(match) > 1 {
-		if !check_env_var_set(match[1], env) {
+		exists, val := check_env_var_set(match[1], env)
+		if !exists {
 			return fmt.Errorf("%s env variable for Body: %s is not set", match[1], pr.Body.Raw)
 		}
+		pr.Body.Raw = strings.Replace(pr.Body.Raw, match[0], val, -1)
 	}
 	return nil
 }
