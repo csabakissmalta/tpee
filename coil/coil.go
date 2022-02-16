@@ -62,6 +62,9 @@ func (c *Coil) Stop() error {
 func consumeTimeline(tl *timeline.Timeline) {
 	go func() {
 		var ct *task.Task = <-tl.Tasks
+		if ct.PlannedExecTimeNanos > 0 {
+			time.Sleep(time.Duration(ct.PlannedExecTimeNanos * int(time.Nanosecond)))
+		}
 		log.Println(ct.PlannedExecTimeNanos)
 		for {
 			next := <-tl.Tasks
