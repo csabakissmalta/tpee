@@ -65,7 +65,7 @@ func consumeTimeline(tl *timeline.Timeline) {
 		log.Println(ct.PlannedExecTimeNanos)
 		for {
 			next := <-tl.Tasks
-			dorm_period := next.PlannedExecTimeNanos * int(time.Nanosecond)
+			dorm_period := (next.PlannedExecTimeNanos - ct.PlannedExecTimeNanos) * int(time.Nanosecond)
 			time.Sleep(time.Duration(dorm_period))
 			log.Println(next.PlannedExecTimeNanos)
 			ct = next
