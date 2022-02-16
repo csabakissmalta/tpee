@@ -10,7 +10,7 @@ import (
 
 type Task struct {
 	// Planned relative execution time nanoseconds
-	PlannedExecTimeNanos int64
+	PlannedExecTimeNanos int
 
 	// HTTP request - ready to execute
 	Request *http.Request
@@ -24,6 +24,12 @@ type Option func(*Task)
 func WithRequest(req *http.Request) Option {
 	return func(t *Task) {
 		t.Request = req
+	}
+}
+
+func WithPlannedExecTimeNanos(n int) Option {
+	return func(t *Task) {
+		t.PlannedExecTimeNanos = n
 	}
 }
 

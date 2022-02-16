@@ -5,6 +5,7 @@ package coil
 
 import (
 	"context"
+	"time"
 
 	"github.com/csabakissmalta/tpee/timeline"
 )
@@ -39,13 +40,11 @@ func New(option ...Option) *Coil {
 // It is a consumer of tasks relying on the main loop and context.
 // It controls only the exact execution of the timeline
 // Should start always from the first element and progressively consume the tasks.
-func (c *Coil) Start() error {
-	var e error
-	for {
-		if e != nil {
-			return e
-		}
+func (c *Coil) Start() {
+	for _, tLine := range c.Timelines {
+		consumeTimeline(tLine)
 	}
+	<-make(chan bool)
 }
 
 // Stops the coil loop
@@ -55,4 +54,11 @@ func (c *Coil) Start() error {
 // 3. condition based termination
 func (c *Coil) Stop() error {
 	return nil
+}
+
+// The Coil needs to control timelines in a separate routines
+func consumeTimeline(tl *timeline.Timeline) {
+	for {
+		time.Sleep(time.Second)
+	}
 }

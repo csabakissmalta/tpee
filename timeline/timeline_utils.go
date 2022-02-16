@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 
@@ -62,9 +63,18 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 func calc_periods(dur int, er *execconf.ExecRequestsElem, rq *postman.Request) chan *task.Task {
 	// the count of markers is (duration - delay) * frequency
 	m_count := (dur - er.DelaySeconds) * er.Frequency
+
+	// the step between the markers
+	second := time.Second
+	convers := int(second / time.Nanosecond)
+	step := int(convers / er.Frequency)
+
 	ch := make(chan *task.Task, m_count)
-	for i := 0; i < int(m_count); i++ {
-		ch <- task.New()
+	for i := er.DelaySeconds * step; i < int(m_count); i++ {
+		curr_step := i * step
+		ch <- task.New(
+			task.WithPlannedExecTimeNanos(curr_step),
+		)
 	}
 	return ch
 }
