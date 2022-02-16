@@ -5,10 +5,8 @@ package coil
 
 import (
 	"context"
-	"log"
 	"time"
 
-	"github.com/csabakissmalta/tpee/task"
 	"github.com/csabakissmalta/tpee/timeline"
 )
 
@@ -61,17 +59,22 @@ func (c *Coil) Stop() error {
 // The Coil needs to control timelines in a separate routines
 func consumeTimeline(tl *timeline.Timeline) {
 	go func() {
-		var ct *task.Task = <-tl.Tasks
-		if ct.PlannedExecTimeNanos > 0 {
-			time.Sleep(time.Duration(ct.PlannedExecTimeNanos * int(time.Nanosecond)))
+		tl.CurrectTask = <-tl.Tasks
+		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
+			time.Sleep(time.Duration(tl.CurrectTask.PlannedExecTimeNanos * int(time.Nanosecond)))
 		}
-		log.Println(ct.PlannedExecTimeNanos)
+		// compose/execute task here
+		// --->
+		tl.CurrectTask.Execute(nil)
+
 		for {
 			next := <-tl.Tasks
-			dorm_period := (next.PlannedExecTimeNanos - ct.PlannedExecTimeNanos) * int(time.Nanosecond)
+			dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
 			time.Sleep(time.Duration(dorm_period))
-			log.Println(next.PlannedExecTimeNanos)
-			ct = next
+			// compose/execute task here
+			// ---> here, in each step a correction needs to be added to the sleep time, due to the overhead of the composition
+
+			tl.CurrectTask = next
 		}
 	}()
 }

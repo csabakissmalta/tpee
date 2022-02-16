@@ -1,16 +1,20 @@
 // Task is the basic element of the test
 // The functionality lies in the execution and reporting.
 // The execution is bound to a time, when it supposed to happen.
-// Single task should never block on itself.
+// Single task failure should never block the timeline or execution of the test, perhaps a threshold can be established.
 package task
 
 import (
 	"net/http"
+	"time"
 )
 
 type Task struct {
 	// Planned relative execution time nanoseconds
 	PlannedExecTimeNanos int
+
+	// Execution absolute time
+	ExecutionTime time.Time
 
 	// HTTP request - ready to execute
 	Request *http.Request
