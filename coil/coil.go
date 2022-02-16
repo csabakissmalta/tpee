@@ -11,7 +11,7 @@ import (
 
 type Coil struct {
 	Ctx       context.Context
-	Timelines []timeline.Timeline
+	Timelines []*timeline.Timeline
 }
 
 type Option func(*Coil)
@@ -22,7 +22,7 @@ func WithContext(ctx context.Context) Option {
 	}
 }
 
-func WithTimelines(tls []timeline.Timeline) Option {
+func WithTimelines(tls []*timeline.Timeline) Option {
 	return func(c *Coil) {
 		c.Timelines = tls
 	}
