@@ -3,6 +3,8 @@
 package timeline
 
 import (
+	"log"
+
 	execconf "github.com/csabakissmalta/tpee/exec"
 	"github.com/csabakissmalta/tpee/postman"
 	"github.com/csabakissmalta/tpee/request"
@@ -40,13 +42,19 @@ func New(option ...Option) *Timeline {
 	return tl
 }
 
-func (t *Timeline) Populate(dur int, r *postman.Request) {
+func (t *Timeline) Populate(dur int, r *postman.Request, env *execconf.ExecEnvironmentElem) {
 	// Create time markers - empty tasks
 	t.Tasks = calc_periods(dur, t.Rules, r)
 
+	// do checks on the Postman Request instance and log status
+	e := check_postman_request_and_validate_requirements(r, env)
+	if e != nil {
+		log.Fatalf("DATA ERROR: %s", e.Error())
+	}
+
 	// pre-process the tasks and check dependencies
 	for tsk := range t.Tasks {
-		request.ComposeHttpRequest(tsk.Request)
+		tsk.Request = request.ComposeHttpRequest(tsk.PostmanRequest, env)
 		t.Tasks <- tsk
 	}
 }

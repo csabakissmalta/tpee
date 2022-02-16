@@ -11,8 +11,14 @@ import (
 )
 
 type Task struct {
+	// Planned relative execution time nanoseconds
+	PlannedExecTimeNanos int64
+
 	// A request to be executed
-	Request *postman.Request
+	PostmanRequest *postman.Request
+
+	// HTTP request - ready to execute
+	Request *http.Request
 
 	// Executed
 	Executed bool
@@ -22,7 +28,7 @@ type Option func(*Task)
 
 func WithRequest(req *postman.Request) Option {
 	return func(t *Task) {
-		t.Request = req
+		t.PostmanRequest = req
 	}
 }
 
