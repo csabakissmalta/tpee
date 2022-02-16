@@ -13,7 +13,16 @@ import (
 func ComposeHttpRequest(r *postman.Request, env []*execconf.ExecEnvironmentElem) *http.Request {
 	log.Println(r.Method)
 	log.Println(r.Auth)
-	log.Println(r.Body)
+	if len(r.Body.Urlencoded) > 0 {
+		for _, b := range r.Body.Urlencoded {
+			log.Println(b.Value)
+		}
+	}
+	if len(r.Body.Formdata) > 0 {
+		for _, f := range r.Body.Formdata {
+			log.Println(f.Value)
+		}
+	}
 	log.Println(r.Header)
 	log.Println(r.URL)
 
