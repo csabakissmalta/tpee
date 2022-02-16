@@ -6,16 +6,11 @@ package task
 
 import (
 	"net/http"
-
-	"github.com/csabakissmalta/tpee/postman"
 )
 
 type Task struct {
 	// Planned relative execution time nanoseconds
 	PlannedExecTimeNanos int64
-
-	// A request to be executed
-	PostmanRequest *postman.Request
 
 	// HTTP request - ready to execute
 	Request *http.Request
@@ -26,9 +21,9 @@ type Task struct {
 
 type Option func(*Task)
 
-func WithRequest(req *postman.Request) Option {
+func WithRequest(req *http.Request) Option {
 	return func(t *Task) {
-		t.PostmanRequest = req
+		t.Request = req
 	}
 }
 

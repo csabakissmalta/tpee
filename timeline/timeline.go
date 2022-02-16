@@ -18,6 +18,9 @@ type Timeline struct {
 	// A channel of tasks, which will be executed at some point in time.
 	Tasks chan *task.Task
 
+	// Request blueprint
+	RequestBlueprint *postman.Request
+
 	// Execution details
 	Rules *execconf.ExecRequestsElem
 
@@ -57,4 +60,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 	// Create time markers - empty tasks
 	t.Tasks = calc_periods(dur, t.Rules, r)
+
+	// set the resulting postman request
+	t.RequestBlueprint = r
 }

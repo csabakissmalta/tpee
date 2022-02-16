@@ -64,9 +64,7 @@ func calc_periods(dur int, er *execconf.ExecRequestsElem, rq *postman.Request) c
 	m_count := (dur - er.DelaySeconds) * er.Frequency
 	ch := make(chan *task.Task, m_count)
 	for i := 0; i < int(m_count); i++ {
-		ch <- task.New(
-			task.WithRequest(rq),
-		)
+		ch <- task.New()
 	}
 	return ch
 }
