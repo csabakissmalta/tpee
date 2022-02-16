@@ -2,11 +2,17 @@
 // It has tasks and duration and other metadata, which will affect the execution
 package timeline
 
-import "github.com/csabakissmalta/tpee/task"
+import (
+	"github.com/csabakissmalta/tpee/postman"
+	"github.com/csabakissmalta/tpee/task"
+)
 
 // Execution parameters for the timeline
 // Loaded from a config, ideally
 type ExecRules struct {
+	// Duration
+	DurationSec int64
+
 	// frequency aka RPS
 	Frequency int64
 
@@ -29,6 +35,7 @@ type Timeline struct {
 	CurrectTask *task.Task
 }
 
-func (t *Timeline) Populate() {
-
+func (t *Timeline) Populate(r *postman.Request) {
+	// Create time markers - empty tasks
+	calc_periods(&t.Rules, r)
 }
