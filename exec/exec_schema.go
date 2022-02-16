@@ -121,11 +121,11 @@ type Exec struct {
 	DurationSeconds int `json:"duration-seconds"`
 
 	// Key/value pairs, defined for the test runtime.
-	Environment []ExecEnvironmentElem `json:"environment,omitempty"`
+	Environment []*ExecEnvironmentElem `json:"environment,omitempty"`
 
 	// The requests and their rate definition corresponding with the Postman
 	// collection
-	Requests []ExecRequestsElem `json:"requests"`
+	Requests []*ExecRequestsElem `json:"requests"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

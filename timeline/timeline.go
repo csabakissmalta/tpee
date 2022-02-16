@@ -42,7 +42,7 @@ func New(option ...Option) *Timeline {
 	return tl
 }
 
-func (t *Timeline) Populate(dur int, r *postman.Request, env *execconf.ExecEnvironmentElem) {
+func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem) {
 	// Create time markers - empty tasks
 	t.Tasks = calc_periods(dur, t.Rules, r)
 

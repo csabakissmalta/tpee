@@ -10,7 +10,7 @@ import (
 
 // Mostly the executable request's lifecycle-related operations
 
-func ComposeHttpRequest(r *postman.Request, env *execconf.ExecEnvironmentElem) *http.Request {
+func ComposeHttpRequest(r *postman.Request, env []*execconf.ExecEnvironmentElem) *http.Request {
 	log.Println(r.Method)
 	log.Println(r.Auth)
 	log.Println(r.Body)
