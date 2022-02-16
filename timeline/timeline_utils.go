@@ -70,7 +70,7 @@ func calc_periods(dur int, er *execconf.ExecRequestsElem, rq *postman.Request) c
 	step := int(convers / er.Frequency)
 
 	ch := make(chan *task.Task, m_count)
-	for i := er.DelaySeconds * step; i < int(m_count); i++ {
+	for i := er.DelaySeconds * er.Frequency; i < int(m_count); i++ {
 		curr_step := i * step
 		ch <- task.New(
 			task.WithPlannedExecTimeNanos(curr_step),
