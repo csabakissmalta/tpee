@@ -17,13 +17,29 @@ type Timeline struct {
 	Tasks chan *task.Task
 
 	// Execution details
-	Rules execconf.ExecRequestsElem
+	Rules *execconf.ExecRequestsElem
 
 	// Current Task
 	CurrectTask *task.Task
 }
 
+type Option func(*Timeline)
+
+func WithRules(rls *execconf.ExecRequestsElem) Option {
+	return func(tl *Timeline) {
+		tl.Rules = rls
+	}
+}
+
+func New(option ...Option) *Timeline {
+	tl := &Timeline{}
+	for _, o := range option {
+		o(tl)
+	}
+	return tl
+}
+
 func (t *Timeline) Populate(dur int, r *postman.Request) {
 	// Create time markers - empty tasks
-	calc_periods(dur, &t.Rules, r)
+	t.Tasks = calc_periods(dur, t.Rules, r)
 }
