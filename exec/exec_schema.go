@@ -9,6 +9,10 @@ type ExecEnvironmentElem struct {
 	// The env variable name
 	Key string `json:"key"`
 
+	// Enum for setting variables for later parsing and composition of the executable
+	// http.Request
+	Type *string `json:"type,omitempty"`
+
 	// The env variable value
 	Value string `json:"value"`
 }
