@@ -76,10 +76,14 @@ func check_postman_request_and_validate_requirements(pr *postman.Request, env []
 		}
 	}
 	// check body
-	e = validate_and_substitute(&pr.Body.Raw, r, env)
-	if e != nil {
-		return e
+	if len(pr.Body.Raw) > 0 {
+		e = validate_and_substitute(&pr.Body.Raw, r, env)
+		if e != nil {
+			return e
+		}
 	}
-
+	// if pr.Body.Formdata != nil {
+	// 	for
+	// }
 	return nil
 }

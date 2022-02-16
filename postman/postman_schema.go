@@ -646,10 +646,10 @@ type Formdata struct {
 }
 
 type Body struct {
-	Mode       string     `json:"mode,omitempty"`
-	Raw        string     `json:"raw,omitempty"`
-	Urlencoded Urlencoded `json:"urlencoded,omitempty"`
-	Formdata   Formdata   `json:"formdata,omitempty"`
+	Mode       string        `json:"mode,omitempty"`
+	Raw        string        `json:"raw,omitempty"`
+	Urlencoded []*Urlencoded `json:"urlencoded,omitempty"`
+	Formdata   []*Formdata   `json:"formdata,omitempty"`
 
 	// --- NOT IMPLEMENTED HERE YET ---
 	// File       File       `json:"file,omitempty"`
