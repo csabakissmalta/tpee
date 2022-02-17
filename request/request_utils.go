@@ -7,10 +7,10 @@ import (
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
-func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*timeline.Feed) (*string, error) {
+func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*timeline.Feed) (string, error) {
 	match := r.FindStringSubmatch(*in)
 	if len(match) == 0 {
-		return in, nil
+		return *in, nil
 	}
 	var feed_varname string
 	var env_var_to_replace string
@@ -31,6 +31,6 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 			env_var_replace_string = <-feed.Value
 		}
 	}
-	*in = strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
-	return in, nil
+	out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
+	return out, nil
 }
