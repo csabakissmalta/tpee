@@ -10,6 +10,9 @@ import (
 
 func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*timeline.Feed) (*string, error) {
 	match := r.FindStringSubmatch(*in)
+	if len(match) == 0 {
+		return in, nil
+	}
 	var feed_varname string
 	var ch chan interface{}
 	var env_var_to_replace string
