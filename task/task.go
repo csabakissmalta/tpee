@@ -47,12 +47,14 @@ func New(option ...Option) *Task {
 }
 
 func (ts *Task) Execute(c *http.Client) error {
-	res, err := c.Do(ts.Request)
-	if err != nil {
-		log.Printf("ERROR: error executing request. %s", err.Error())
-	}
-	log.Println("STATUS: ", res.StatusCode)
-	return err
+	go func() {
+		res, err := c.Do(ts.Request)
+		if err != nil {
+			log.Printf("ERROR: error executing request. %s", err.Error())
+		}
+		log.Println("STATUS: ", res.StatusCode)
+	}()
+	return nil
 }
 
 func (ts *Task) Report(taskdata interface{}) interface{} {
