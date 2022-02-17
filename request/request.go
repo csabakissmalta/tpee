@@ -19,6 +19,7 @@ func ComposeHttpRequest(t *task.Task, p *postman.Request, env []*execconf.ExecEn
 	// check the postman request
 	// URL
 	// URL.Raw
+	log.Println(p.URL.Raw)
 	err := validate_and_substitute_feed_type(p.URL.Raw, r, fds)
 	if err != nil {
 		log.Println("SUBSTITUTE FEED VAR ERROR: Could not parse or substitute the variable.")
