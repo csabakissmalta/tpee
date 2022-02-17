@@ -83,6 +83,7 @@ func consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem)
 			time.Sleep(time.Duration(dorm_period))
 			// compose/execute task here
 			// ---> here, in each step a correction needs to be added to the sleep time, due to the overhead of the composition
+
 			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds)
 			tl.CurrectTask = next
 		}
