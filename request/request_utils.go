@@ -28,16 +28,16 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 						ch = feed.Value
 					}
 				}
-				if ch != nil {
-					env_var_replace_string = <-ch
-				} else {
-					e := fmt.Errorf("the variable match has failed, no feed value is substituted")
-					return in, e
-				}
 			} else if name == "WHOLE" {
 				env_var_to_replace = match[i]
 			}
 		}
+	}
+	if ch != nil {
+		env_var_replace_string = <-ch
+	} else {
+		e := fmt.Errorf("the variable match has failed, no feed value is substituted")
+		return in, e
 	}
 	*in = strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 	return in, nil

@@ -58,7 +58,6 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 		})
 
 		for i := 0; i < dim; i++ {
-			log.Println(rec[i][rec_index])
 			f.Value <- rec[i][rec_index]
 		}
 	case "json":
