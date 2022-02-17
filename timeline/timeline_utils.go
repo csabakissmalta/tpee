@@ -57,7 +57,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 		})
 
 		for i := 0; i < dim; i++ {
-			f.Value <- rec[rec_index]
+			f.Value <- rec[i][rec_index]
 		}
 	case "json":
 	case "txt":
