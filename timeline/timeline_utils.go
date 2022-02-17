@@ -30,6 +30,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	// determine feed file type and load the file accordingly
 	f_name := strings.Split(e.Value, "|")[1]
 	f_extension := strings.Split(f_name, ".")[1]
+	f_extension = f_extension[:len(f_extension)-1]
 	switch f_extension {
 	case "csv":
 		var rec_index int

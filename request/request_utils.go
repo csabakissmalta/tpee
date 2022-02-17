@@ -22,6 +22,7 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 			// log.Printf("MATCHED: var: %s :: value: %s", name, match[i])
 			if name == "FEED_VAR" {
 				feed_varname = match[i]
+				// log.Println("feed_varname: ", feed_varname)
 				for _, feed := range fds {
 					if feed_varname == feed.Name {
 						ch = feed.Value
