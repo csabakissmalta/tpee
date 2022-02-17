@@ -1,7 +1,6 @@
 package request
 
 import (
-	"log"
 	"regexp"
 	"strings"
 
@@ -30,7 +29,6 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 	for _, feed := range fds {
 		if feed_varname == feed.Name {
 			env_var_replace_string = <-feed.Value
-			log.Println(env_var_replace_string)
 		}
 	}
 	*in = strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)

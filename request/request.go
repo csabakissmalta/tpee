@@ -24,7 +24,8 @@ func ComposeHttpRequest(t *task.Task, p *postman.Request, env []*execconf.ExecEn
 	if err != nil {
 		log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 	}
-	p.URL.Raw = *out
+	log.Println(out)
+	// p.URL.Raw = *out
 
 	// Body if Urlencoded
 	if len(p.Body.Urlencoded) > 0 {
@@ -33,14 +34,15 @@ func ComposeHttpRequest(t *task.Task, p *postman.Request, env []*execconf.ExecEn
 			if err != nil {
 				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 			}
-			b.Value = *out
+			log.Println(out)
+			// b.Value = *out
 		}
 	}
-	if len(p.Body.Urlencoded) > 0 {
-		for _, b := range p.Body.Urlencoded {
-			log.Println(b.Value)
-		}
-	}
+	// if len(p.Body.Urlencoded) > 0 {
+	// 	for _, b := range p.Body.Urlencoded {
+	// 		log.Println(b.Value)
+	// 	}
+	// }
 
 	r_res, e := http.NewRequest(p.Method, p.URL.Raw, nil)
 	if e != nil {
