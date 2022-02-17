@@ -1,7 +1,7 @@
 package request
 
 import (
-	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -14,7 +14,6 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 		return in, nil
 	}
 	var feed_varname string
-	var ch chan interface{}
 	var env_var_to_replace string
 	var env_var_replace_string interface{}
 	for i, name := range r.SubexpNames() {
@@ -23,21 +22,16 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 			if name == "FEED_VAR" {
 				feed_varname = match[i]
 				// log.Println("feed_varname: ", feed_varname)
-				for _, feed := range fds {
-					if feed_varname == feed.Name {
-						ch = feed.Value
-					}
-				}
 			} else if name == "WHOLE" {
 				env_var_to_replace = match[i]
 			}
 		}
 	}
-	if ch != nil {
-		env_var_replace_string = <-ch
-	} else {
-		e := fmt.Errorf("the variable match has failed, no feed value is substituted")
-		return in, e
+	for _, feed := range fds {
+		if feed_varname == feed.Name {
+			env_var_replace_string = feed.Value
+			log.Println(env_var_replace_string)
+		}
 	}
 	*in = strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 	return in, nil
