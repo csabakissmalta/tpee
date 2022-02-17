@@ -20,22 +20,22 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 	// check the postman request
 	// URL
 	// URL.Raw
-	out, err := validate_and_substitute_feed_type(&p.URL.Raw, r, fds)
+	_, err := validate_and_substitute_feed_type(&p.URL.Raw, r, fds)
 	if err != nil {
 		log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 	}
 	// log.Println(out)
-	p.URL.Raw = out
+	// p.URL.Raw = out
 
 	// Body if Urlencoded
 	if len(p.Body.Urlencoded) > 0 {
 		for _, b := range p.Body.Urlencoded {
-			out, err := validate_and_substitute_feed_type(&b.Value, r, fds)
+			_, err := validate_and_substitute_feed_type(&b.Value, r, fds)
 			if err != nil {
 				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 			}
 			// log.Println(out)
-			b.Value = out
+			// b.Value = out
 		}
 	}
 	if len(p.Body.Urlencoded) > 0 {
