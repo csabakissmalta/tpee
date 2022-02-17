@@ -36,9 +36,9 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, fds []*
 				}
 			} else if name == "WHOLE" {
 				env_var_to_replace = match[i]
-				*in = strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 			}
 		}
 	}
+	*in = strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 	return in, nil
 }
