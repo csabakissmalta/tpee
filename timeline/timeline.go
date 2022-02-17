@@ -4,6 +4,7 @@ package timeline
 
 import (
 	"log"
+	"net/http"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
@@ -27,8 +28,11 @@ type Timeline struct {
 	// Current Task
 	CurrectTask *task.Task
 
-	// feeds
+	// Feeds
 	Feeds []*Feed
+
+	// HTTP client
+	HTTPClient *http.Client
 }
 
 type Option func(*Timeline)
@@ -36,6 +40,12 @@ type Option func(*Timeline)
 func WithRules(rls *execconf.ExecRequestsElem) Option {
 	return func(tl *Timeline) {
 		tl.Rules = rls
+	}
+}
+
+func WithHTTPClient(c *http.Client) Option {
+	return func(tl *Timeline) {
+		tl.HTTPClient = c
 	}
 }
 

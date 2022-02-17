@@ -5,6 +5,7 @@
 package task
 
 import (
+	"log"
 	"net/http"
 	"time"
 )
@@ -46,7 +47,12 @@ func New(option ...Option) *Task {
 }
 
 func (ts *Task) Execute(c *http.Client) error {
-	return nil
+	res, err := c.Do(ts.Request)
+	if err != nil {
+		log.Printf("ERROR: error executing request. %s", err.Error())
+	}
+	log.Println("STATUS: ", res.StatusCode)
+	return err
 }
 
 func (ts *Task) Report(taskdata interface{}) interface{} {
