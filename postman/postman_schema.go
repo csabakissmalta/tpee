@@ -167,10 +167,10 @@ func (j *VariableType) UnmarshalJSON(b []byte) error {
 }
 
 type Request struct {
-	Auth   Auth     `json:"auth"`
+	Auth   Auth     `json:"auth,omitempty"`
 	Method string   `json:"method"`
 	Header []Header `json:"header"`
-	Body   Body     `json:"body"`
+	Body   Body     `json:"body,omitempty"`
 	URL    URL      `json:"url"`
 }
 
