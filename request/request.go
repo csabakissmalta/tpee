@@ -14,7 +14,7 @@ import (
 // Mostly the executable request's lifecycle-related operations
 
 // Regex to get the substitution variable name (max length 30 characters)
-var r = regexp.MustCompile(`[\+]{1}(.{1,30})[|]{1}`)
+var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>.{1,30})[|]{1}.+[\+])`)
 
 func ComposeHttpRequest(t *task.Task, p *postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed) (*task.Task, error) {
 	// check the postman request
