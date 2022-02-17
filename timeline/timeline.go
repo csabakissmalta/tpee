@@ -6,8 +6,8 @@ import (
 	"log"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
-	"github.com/csabakissmalta/tpee/postman"
-	"github.com/csabakissmalta/tpee/task"
+	postman "github.com/csabakissmalta/tpee/postman"
+	task "github.com/csabakissmalta/tpee/task"
 )
 
 type Timeline struct {

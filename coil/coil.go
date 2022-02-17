@@ -7,12 +7,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/csabakissmalta/tpee/timeline"
+	execconf "github.com/csabakissmalta/tpee/exec"
+	request "github.com/csabakissmalta/tpee/request"
+	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
 type Coil struct {
 	Ctx       context.Context
 	Timelines []*timeline.Timeline
+	EnvVars   []*execconf.ExecEnvironmentElem
 }
 
 type Option func(*Coil)
@@ -29,6 +32,12 @@ func WithTimelines(tls []*timeline.Timeline) Option {
 	}
 }
 
+func WithEnvVariables(ev []*execconf.ExecEnvironmentElem) Option {
+	return func(c *Coil) {
+		c.EnvVars = ev
+	}
+}
+
 func New(option ...Option) *Coil {
 	c := &Coil{}
 	for _, o := range option {
@@ -42,7 +51,7 @@ func New(option ...Option) *Coil {
 // Should start always from the first element and progressively consume the tasks.
 func (c *Coil) Start() {
 	for _, tLine := range c.Timelines {
-		consumeTimeline(tLine)
+		consumeTimeline(tLine, c.EnvVars)
 	}
 	<-make(chan bool)
 }
@@ -57,7 +66,7 @@ func (c *Coil) Stop() error {
 }
 
 // The Coil needs to control timelines in a separate routines
-func consumeTimeline(tl *timeline.Timeline) {
+func consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
@@ -65,6 +74,7 @@ func consumeTimeline(tl *timeline.Timeline) {
 		}
 		// compose/execute task here
 		// --->
+		request.ComposeHttpRequest(tl.CurrectTask, tl.RequestBlueprint, env, tl.Feeds)
 		tl.CurrectTask.Execute(nil)
 
 		for {
@@ -73,7 +83,7 @@ func consumeTimeline(tl *timeline.Timeline) {
 			time.Sleep(time.Duration(dorm_period))
 			// compose/execute task here
 			// ---> here, in each step a correction needs to be added to the sleep time, due to the overhead of the composition
-
+			request.ComposeHttpRequest(next, tl.RequestBlueprint, env, tl.Feeds)
 			tl.CurrectTask = next
 		}
 	}()

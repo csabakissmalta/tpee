@@ -4,15 +4,15 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
-
-	"github.com/csabakissmalta/tpee/postman"
-	"github.com/csabakissmalta/tpee/task"
+	postman "github.com/csabakissmalta/tpee/postman"
+	task "github.com/csabakissmalta/tpee/task"
 )
 
 var r = regexp.MustCompile(`[\{]{2}(.{1,32})[\}]{2}`)
@@ -49,6 +49,13 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 				break
 			}
 		}
+		// shuffle the feed records - they tend to be ordered in some way
+		rec = rec[1:]
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(rec), func(i, j int) {
+			rec[i], rec[j] = rec[j], rec[i]
+		})
+
 		for i := 0; i < dim; i++ {
 			f.Value <- rec[rec_index]
 		}
