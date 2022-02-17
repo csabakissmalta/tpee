@@ -1,9 +1,13 @@
 package request
 
 import (
+	"bytes"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
@@ -17,6 +21,10 @@ import (
 var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>.{1,30})[|]{1}.+[\+])`)
 
 func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed) (*task.Task, error) {
+	var req_url string
+	var req_method string = p.Method
+	// body_urlencoded
+
 	// check the postman request
 	// URL
 	// URL.Raw
@@ -24,47 +32,38 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 	if err != nil {
 		log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 	}
-	// log.Println(out)
-	// p.URL.Raw = out
 
 	// Body if Urlencoded
 	if len(p.Body.Urlencoded) > 0 {
+		body_urlencoded := url.Values{}
 		for _, b := range p.Body.Urlencoded {
-			_, err := validate_and_substitute_feed_type(&b.Value, r, fds)
+			out, err := validate_and_substitute_feed_type(&b.Value, r, fds)
 			if err != nil {
 				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 			}
-			// log.Println(out)
-			// b.Value = out
+			body_urlencoded.Set(b.Key, out)
 		}
-	}
-	if len(p.Body.Urlencoded) > 0 {
-		for _, b := range p.Body.Urlencoded {
-			log.Println(b.Value)
+		encoded_data := body_urlencoded.Encode()
+		r_res, e := http.NewRequest(req_method, req_url, strings.NewReader(encoded_data))
+		if e != nil {
+			return nil, e
 		}
+		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
+		task.WithRequest(r_res)(t)
 	}
 
-	r_res, e := http.NewRequest(p.Method, p.URL.Raw, nil)
-	if e != nil {
-		return nil, e
+	// Body if Raw
+	if len(p.Body.Raw) > 0 {
+		out, err := validate_and_substitute_feed_type(&p.Body.Raw, r, fds)
+		if err != nil {
+			log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+		}
+		r_res, e := http.NewRequest(req_method, req_url, bytes.NewBuffer([]byte(out)))
+		if e != nil {
+			return nil, e
+		}
+		task.WithRequest(r_res)(t)
 	}
-
-	task.WithRequest(r_res)(t)
 
 	return t, nil
 }
-
-// log.Println(r.Method)
-// log.Println(r.Auth)
-// if len(r.Body.Urlencoded) > 0 {
-// 	for _, b := range r.Body.Urlencoded {
-// 		log.Println(b.Value)
-// 	}
-// }
-// if len(r.Body.Formdata) > 0 {
-// 	for _, f := range r.Body.Formdata {
-// 		log.Println(f.Value)
-// 	}
-// }
-// log.Println(r.Header)
-// log.Println(r.URL)
