@@ -24,7 +24,7 @@ func ComposeHttpRequest(t *task.Task, p *postman.Request, env []*execconf.ExecEn
 	if err != nil {
 		log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 	}
-	log.Println(out)
+	log.Println(*out)
 	// p.URL.Raw = *out
 
 	// Body if Urlencoded
@@ -34,7 +34,7 @@ func ComposeHttpRequest(t *task.Task, p *postman.Request, env []*execconf.ExecEn
 			if err != nil {
 				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 			}
-			log.Println(out)
+			log.Println(*out)
 			// b.Value = *out
 		}
 	}
