@@ -41,6 +41,9 @@ func (j *ExecEnvironmentElem) UnmarshalJSON(b []byte) error {
 // The precise definition for the implementation where to find the required value
 // to save.
 type ExecRequestsElemDataPersistenceDataOutElem struct {
+	// Should be set to be able to determine the way to extract the value.
+	ContentType string `json:"content-type"`
+
 	// The name of the property the value of is required
 	Name *string `json:"name,omitempty"`
 
@@ -53,6 +56,9 @@ func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) err
 	var raw map[string]interface{}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
+	}
+	if v, ok := raw["content-type"]; !ok || v == nil {
+		return fmt.Errorf("field content-type: required")
 	}
 	if v, ok := raw["target"]; !ok || v == nil {
 		return fmt.Errorf("field target: required")

@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	datastore "github.com/csabakissmalta/tpee/datastore"
 )
 
 type Task struct {
@@ -52,7 +54,9 @@ func (ts *Task) Execute(c *http.Client) error {
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
-		log.Println("STATUS: ", res.StatusCode)
+		if res.StatusCode < 400 {
+			datastore.ExtractDataFromResponse(res)
+		}
 	}()
 	return nil
 }
