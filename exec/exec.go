@@ -19,3 +19,15 @@ func (ex *Exec) LoadExecConfig(path string) error {
 	}
 	return nil
 }
+
+func GetAllDataPersistenceDataNames(lst []*ExecRequestsElem) []string {
+	names := []string{}
+	c := 0
+	for _, le := range lst {
+		for _, l := range le.DataPersistence.DataOut {
+			names[c] = *l.Name
+			c += 1
+		}
+	}
+	return names
+}

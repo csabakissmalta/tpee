@@ -7,6 +7,7 @@ import (
 	"context"
 	"time"
 
+	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
 	request "github.com/csabakissmalta/tpee/request"
 	timeline "github.com/csabakissmalta/tpee/timeline"
@@ -16,6 +17,7 @@ type Coil struct {
 	Ctx       context.Context
 	Timelines []*timeline.Timeline
 	EnvVars   []*execconf.ExecEnvironmentElem
+	DataStore *datastore.DataBroadcaster
 }
 
 type Option func(*Coil)
@@ -51,7 +53,7 @@ func New(option ...Option) *Coil {
 // Should start always from the first element and progressively consume the tasks.
 func (c *Coil) Start() {
 	for _, tLine := range c.Timelines {
-		consumeTimeline(tLine, c.EnvVars)
+		c.consumeTimeline(tLine, c.EnvVars)
 	}
 	<-make(chan bool)
 }
@@ -66,7 +68,18 @@ func (c *Coil) Stop() error {
 }
 
 // The Coil needs to control timelines in a separate routines
-func consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
+func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
+	if c.DataStore == nil {
+		all_req_conf := []*execconf.ExecRequestsElem{}
+		for i, t := range c.Timelines {
+			all_req_conf[i] = t.Rules
+		}
+		names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
+		c.DataStore = datastore.New(
+			datastore.WithDataOutSocketNames(names),
+		)
+	}
+
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
