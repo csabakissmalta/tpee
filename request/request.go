@@ -115,7 +115,17 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 			}
 			r_res.SetBasicAuth(uname, pword)
 		case "bearer":
-			log.Printf("ERROR: Auth type %s is not implemented yet", p.Auth.Type)
+			var token string
+			for _, autAttr := range p.Auth.Bearer {
+				if autAttr.Key == "username" {
+					token = autAttr.Value.(string)
+				}
+			}
+			out, err := validate_and_substitute_feed_type(&token, r, rds, fds, ds)
+			if err != nil {
+				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+			}
+			r_res.Header.Add("Authorization", "Bearer"+out)
 		default:
 			log.Printf("ERROR: Auth type %s is not implemented yet", p.Auth.Type)
 		}
