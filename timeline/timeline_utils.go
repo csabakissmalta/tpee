@@ -89,9 +89,6 @@ func calc_periods(dur int, er *execconf.ExecRequestsElem, rq *postman.Request) c
 
 func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) (bool, string) {
 	for _, envElem := range env {
-		if *envElem.Type == execconf.GENERATED_VALUE {
-			continue
-		}
 		if envElem.Key == vname && len(envElem.Value) > 0 {
 			return true, envElem.Value
 		}
@@ -122,7 +119,7 @@ func validate_and_substitute(src *string, rgx *regexp.Regexp, env []*execconf.Ex
 	return nil
 }
 
-func check_postman_request_and_validate_requirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
+func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
 	// check URL raw
 	e := validate_and_substitute(&pr.URL.Raw, r, env)
 	if e != nil {

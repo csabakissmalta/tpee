@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
 	task "github.com/csabakissmalta/tpee/task"
@@ -22,7 +23,10 @@ import (
 // Regex to get the substitution variable name (max length 30 characters)
 var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>.{1,30})[|]{1}.+[\+])`)
 
-func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed) (*task.Task, error) {
+// Regex to get the substitution variable for the datastore
+var rds = regexp.MustCompile(`(?P<WHOLE>[<-]{2}(?P<CHAN>.{1,30})[<-]{2})`)
+
+func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster) (*task.Task, error) {
 	var req_url string
 	var req_method string = p.Method
 	var r_res *http.Request
@@ -30,7 +34,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// check the postman request
 	// --- URL.Raw ---
-	out, err := validate_and_substitute_feed_type(&p.URL.Raw, r, fds)
+	out, err := validate_and_substitute_feed_type(&p.URL.Raw, r, rds, fds, ds)
 	if err != nil {
 		log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 	}
@@ -40,7 +44,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 	if len(p.Body.Urlencoded) > 0 {
 		body_urlencoded := url.Values{}
 		for _, b := range p.Body.Urlencoded {
-			out, err := validate_and_substitute_feed_type(&b.Value, r, fds)
+			out, err := validate_and_substitute_feed_type(&b.Value, r, rds, fds, ds)
 			if err != nil {
 				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 			}
@@ -56,7 +60,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// --- Body if Raw ---
 	if len(p.Body.Raw) > 0 {
-		out, err := validate_and_substitute_feed_type(&p.Body.Raw, r, fds)
+		out, err := validate_and_substitute_feed_type(&p.Body.Raw, r, rds, fds, ds)
 		if err != nil {
 			log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 		}
@@ -75,7 +79,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 			if err != nil {
 				log.Printf("ERROR: %s", err.Error())
 			}
-			out, err := validate_and_substitute_feed_type(&fd.Value, r, fds)
+			out, err := validate_and_substitute_feed_type(&fd.Value, r, rds, fds, ds)
 			if err != nil {
 				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
 			}

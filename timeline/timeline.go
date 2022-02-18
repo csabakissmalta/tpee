@@ -3,7 +3,6 @@
 package timeline
 
 import (
-	"log"
 	"net/http"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
@@ -58,12 +57,6 @@ func New(option ...Option) *Timeline {
 }
 
 func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem) {
-	// do checks on the Postman Request instance and log status
-	e := check_postman_request_and_validate_requirements(r, env)
-	if e != nil {
-		log.Fatalf("DATA ERROR: %s", e.Error())
-	}
-
 	// check env elements and load feeds if there is any feedValue type
 	timeline_dimension := (dur - t.Rules.DelaySeconds) * t.Rules.Frequency
 	t.Feeds = load_feeds_if_required(timeline_dimension, env)
