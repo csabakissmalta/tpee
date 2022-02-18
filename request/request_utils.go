@@ -26,7 +26,7 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 	var env_var_replace_string interface{}
 
 	if len(match_feed) > 0 {
-		for i, name := range r.SubexpNames() {
+		for i, name := range r_var.SubexpNames() {
 			if i > 0 && i <= len(match_feed) {
 				if name == "FEED_VAR" {
 					feed_varname = match_feed[i]
@@ -48,7 +48,7 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 	}
 
 	if len(match_channel) > 0 {
-		for i, name := range r.SubexpNames() {
+		for i, name := range r_ds.SubexpNames() {
 			log.Println(i, name)
 			if i > 0 && i <= len(match_channel) {
 				if name == "CHAN" {
