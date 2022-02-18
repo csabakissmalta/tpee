@@ -49,13 +49,10 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 
 	if len(match_channel) > 0 {
 		for i, name := range r_ds.SubexpNames() {
-			log.Println(i, name)
 			if i > 0 && i <= len(match_channel) {
 				if name == "CHAN" {
-					log.Println(name)
 					feed_varname = match_channel[i]
 				} else if name == "WHOLE" {
-					log.Println(name)
 					env_var_to_replace = match_channel[i]
 				}
 			}
@@ -69,7 +66,7 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 		env_var_replace_string = <-ch
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 		// ch <- env_var_replace_string
-		// log.Println(out)
+		log.Println(out)
 		return out, nil
 	}
 	return *in, nil
