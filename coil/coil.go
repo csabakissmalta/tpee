@@ -80,9 +80,10 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 		c.DataStore = datastore.New(
 			datastore.WithDataOutSocketNames(names),
 		)
-		c.DataStore.StartConsumingDataIn()
+		go c.DataStore.StartConsumingDataIn()
 	}
 	log.Println("start consuming timeline")
+
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
