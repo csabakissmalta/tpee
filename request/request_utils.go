@@ -44,11 +44,11 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 		return out, nil
 	} else if len(match_channel) > 0 {
 		for i, name := range r.SubexpNames() {
-			if i > 0 && i <= len(match_feed) {
+			if i > 0 && i <= len(match_channel) {
 				if name == "CHAN" {
-					feed_varname = match_feed[i]
+					feed_varname = match_channel[i]
 				} else if name == "WHOLE" {
-					env_var_to_replace = match_feed[i]
+					env_var_to_replace = match_channel[i]
 				}
 			}
 		}
