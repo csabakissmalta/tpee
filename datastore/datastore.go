@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"reflect"
@@ -78,11 +80,26 @@ func WithDataOutSocketNames(dss []string) Option {
 	}
 }
 
+func (db *DataBroadcaster) getDataChannelByName(name string) *Data {
+	for _, d := range db.DataOut {
+		if name == d.Name {
+			return d
+		}
+	}
+	return nil
+}
+
 func (db *DataBroadcaster) StartConsumingDataIn() {
 	for {
 		select {
 		case in := <-dataIn:
-			log.Println(in.Name)
+			ch_obj := db.getDataChannelByName(in.Name)
+			if ch_obj != nil {
+				log.Println(in.In)
+				ch_obj.Queue <- in.In
+			} else {
+				log.Println("DATA EXTRACTION ERROR: out channel doesn't exist")
+			}
 		default:
 			continue
 		}
@@ -93,7 +110,7 @@ func PushDataIn(d *InUnsorted) {
 	dataIn <- d
 }
 
-func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem) (interface{}, error) {
+func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem) {
 	// determine content type, based on response header
 	for _, rule := range extr_rules {
 		if rule.Target == EXTR_TARGET_BODY {
@@ -101,10 +118,17 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 			ctype := strings.Split(raw_ctype, ";")[0]
 			switch {
 			case strings.Contains(ctype, "json"):
-				log.Println("JSON TYPE")
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Println("DATA EXTRACTION ERROR:", err.Error())
+				}
+				defer resp.Body.Close()
+
+				to_push := extractFromJSONBody(body, *rule.Name)
+
 				PushDataIn(&InUnsorted{
 					Name: *rule.Name,
-					In:   ctype,
+					In:   to_push,
 				})
 			default:
 				log.Println(ctype)
@@ -114,5 +138,14 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 			log.Println(rule.Target)
 		}
 	}
-	return nil, nil
+}
+
+func extractFromJSONBody(b []byte, key string) string {
+	intf := make(map[string]interface{})
+	e := json.Unmarshal(b, &intf)
+	if e != nil {
+		log.Println("DATA EXTRACTION ERROR:", e.Error())
+	}
+	result := intf[key].(string)
+	return result
 }
