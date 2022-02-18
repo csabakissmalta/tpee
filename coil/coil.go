@@ -31,24 +31,6 @@ func WithContext(ctx context.Context) Option {
 
 func WithTimelines(tls []*timeline.Timeline) Option {
 	return func(c *Coil) {
-		if c.DataStore == nil {
-			all_req_conf := []*execconf.ExecRequestsElem{}
-			for _, t := range tls {
-				all_req_conf = append(all_req_conf, t.Rules)
-			}
-			names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
-			c.DataStore = datastore.New(
-				datastore.WithDataOutSocketNames(names),
-			)
-			for _, t := range tls {
-				// do checks on the Postman Request instance and log status
-				e := timeline.CheckPostmanRequestAndValidateRequirements(t.RequestBlueprint, c.EnvVars)
-				if e != nil {
-					log.Fatalf("DATA ERROR: %s", e.Error())
-				}
-			}
-			go c.DataStore.StartConsumingDataIn()
-		}
 		c.Timelines = tls
 	}
 }
@@ -88,6 +70,24 @@ func (c *Coil) Stop() error {
 
 // The Coil needs to control timelines in a separate routines
 func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
+
+	if c.DataStore == nil {
+		all_req_conf := []*execconf.ExecRequestsElem{}
+		for _, t := range c.Timelines {
+			all_req_conf = append(all_req_conf, t.Rules)
+		}
+		names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
+		c.DataStore = datastore.New(
+			datastore.WithDataOutSocketNames(names),
+		)
+		go c.DataStore.StartConsumingDataIn()
+	}
+
+	e := timeline.CheckPostmanRequestAndValidateRequirements(tl.RequestBlueprint, c.EnvVars)
+	if e != nil {
+		log.Fatalf("DATA ERROR: %s", e.Error())
+	}
+
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
