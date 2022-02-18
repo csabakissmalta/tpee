@@ -71,8 +71,8 @@ func (c *Coil) Stop() error {
 func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
 	if c.DataStore == nil {
 		all_req_conf := []*execconf.ExecRequestsElem{}
-		for i, t := range c.Timelines {
-			all_req_conf[i] = t.Rules
+		for _, t := range c.Timelines {
+			all_req_conf = append(all_req_conf, t.Rules)
 		}
 		names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
 		c.DataStore = datastore.New(
