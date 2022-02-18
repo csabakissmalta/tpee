@@ -95,7 +95,7 @@ type ExecRequestsElemDataPersistence struct {
 	DataIn []string `json:"data-in,omitempty"`
 
 	// Data variable names, generated/set from the request/response
-	DataOut []ExecRequestsElemDataPersistenceDataOutElem `json:"data-out,omitempty"`
+	DataOut []*ExecRequestsElemDataPersistenceDataOutElem `json:"data-out,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

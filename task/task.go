@@ -10,6 +10,7 @@ import (
 	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
+	execconfig "github.com/csabakissmalta/tpee/exec"
 )
 
 type Task struct {
@@ -48,14 +49,14 @@ func New(option ...Option) *Task {
 	return t
 }
 
-func (ts *Task) Execute(c *http.Client) error {
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem) error {
 	go func() {
 		res, err := c.Do(ts.Request)
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
-		if res.StatusCode < 400 {
-			datastore.ExtractDataFromResponse(res)
+		if res.StatusCode < 400 && len(extract_rules) > 0 {
+			datastore.ExtractDataFromResponse(res, extract_rules)
 		}
 	}()
 	return nil
