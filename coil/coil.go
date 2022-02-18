@@ -5,6 +5,7 @@ package coil
 
 import (
 	"context"
+	"log"
 	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
@@ -69,6 +70,7 @@ func (c *Coil) Stop() error {
 
 // The Coil needs to control timelines in a separate routines
 func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
+
 	if c.DataStore == nil {
 		all_req_conf := []*execconf.ExecRequestsElem{}
 		for _, t := range c.Timelines {
@@ -80,7 +82,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 		)
 		c.DataStore.StartConsumingDataIn()
 	}
-
+	log.Println("start consuming timeline")
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
