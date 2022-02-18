@@ -56,7 +56,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
 		if res.StatusCode < 400 && len(extract_rules) > 0 {
-			datastore.ExtractDataFromResponse(res, extract_rules)
+			go datastore.ExtractDataFromResponse(res, extract_rules)
 		}
 	}()
 	return nil
