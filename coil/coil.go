@@ -95,7 +95,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 			time.Sleep(time.Duration(tl.CurrectTask.PlannedExecTimeNanos * int(time.Nanosecond)))
 		}
 		// compose/execute task here
-		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds)
+		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
 		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
 
 		for {
@@ -104,7 +104,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 			time.Sleep(time.Duration(dorm_period))
 
 			// compose/execute task here
-			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds)
+			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
 			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
 			tl.CurrectTask = next
 		}
