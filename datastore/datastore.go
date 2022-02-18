@@ -95,7 +95,7 @@ func (db *DataBroadcaster) StartConsumingDataIn() {
 		case in := <-dataIn:
 			ch_obj := db.getDataChannelByName(in.Name)
 			if ch_obj != nil {
-				log.Println(in.In)
+				// log.Println(in.In)
 				ch_obj.Queue <- in.In
 			} else {
 				log.Println("DATA EXTRACTION ERROR: out channel doesn't exist")
