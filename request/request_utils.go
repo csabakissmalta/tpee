@@ -17,8 +17,8 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 	match_feed := r_var.FindStringSubmatch(*in)
 	match_channel := r_ds.FindStringSubmatch(*in)
 
-	log.Println("len(match_feed)", len(match_feed))
-	log.Println("len(match_channel)", len(match_channel))
+	// log.Println("len(match_feed)", len(match_feed))
+	// log.Println("len(match_channel)", len(match_channel))
 
 	var ch chan interface{}
 	var feed_varname string

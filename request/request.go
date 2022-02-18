@@ -24,7 +24,7 @@ import (
 var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>[a-z0-9-_]{1,30})[|]{1}.+[\+])`)
 
 // Regex to get the substitution variable for the datastore
-var rds = regexp.MustCompile(`(?P<WHOLE>[<-]{2}(?P<CHAN>[a-z0-9-_]{1,30})[<-]{2})`)
+var rds = regexp.MustCompile(`(?P<WHOLE>[\<\-]{2}(?P<CHAN>[a-z0-9\-_]{1,30})[\<\-]{2})`)
 
 func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster) (*task.Task, error) {
 	var req_url string
