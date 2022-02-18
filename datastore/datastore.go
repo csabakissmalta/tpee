@@ -60,16 +60,16 @@ func WithDataOutSocketNames(dss []string) Option {
 	d := []*Data{}
 	cases = []reflect.SelectCase{}
 	for i, nm := range dss {
-		d[i] = &Data{
+		d = append(d, &Data{
 			Name:  nm,
 			Queue: make(chan interface{}, OUT_CHANNELS_BUFFER_SIZE),
-		}
+		})
 		_cs := reflect.SelectCase{
 			Dir:  reflect.SelectSend,
 			Chan: reflect.ValueOf(d[i].Queue),
 			// Send: ,
 		}
-		cases[i] = _cs
+		cases = append(cases, _cs)
 	}
 
 	return func(db *DataBroadcaster) {
