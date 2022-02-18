@@ -14,8 +14,8 @@ import (
 const (
 	EXTR_TARGET_BODY         = "body"
 	EXTR_TARGET_HEADER       = "header"
-	OUT_CHANNELS_BUFFER_SIZE = 100
-	IN_CHANNELS_BUFFER_SIZE  = 10
+	OUT_CHANNELS_BUFFER_SIZE = 1000
+	IN_CHANNELS_BUFFER_SIZE  = 1000
 )
 
 var cases []reflect.SelectCase
