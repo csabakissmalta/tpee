@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"reflect"
 	"strings"
 
 	execconfig "github.com/csabakissmalta/tpee/exec"
@@ -17,8 +16,6 @@ const (
 	OUT_CHANNELS_BUFFER_SIZE = 1000
 	IN_CHANNELS_BUFFER_SIZE  = 1000
 )
-
-var cases []reflect.SelectCase
 
 var dataIn chan *InUnsorted
 
@@ -59,7 +56,6 @@ func New(option ...Option) *DataBroadcaster {
 
 func WithDataOutSocketNames(dss []string) Option {
 	d := []*Data{}
-	cases = []reflect.SelectCase{}
 
 	for _, nm := range dss {
 		_dq := &Data{
@@ -67,12 +63,6 @@ func WithDataOutSocketNames(dss []string) Option {
 			Queue: make(chan interface{}, OUT_CHANNELS_BUFFER_SIZE),
 		}
 		d = append(d, _dq)
-		_cs := reflect.SelectCase{
-			Dir:  reflect.SelectSend,
-			Chan: reflect.ValueOf(_dq.Queue),
-			// Send: ,
-		}
-		cases = append(cases, _cs)
 	}
 
 	return func(db *DataBroadcaster) {
@@ -95,7 +85,6 @@ func (db *DataBroadcaster) StartConsumingDataIn() {
 		case in := <-dataIn:
 			ch_obj := db.getDataChannelByName(in.Name)
 			if ch_obj != nil {
-				// log.Println(in.In)
 				ch_obj.Queue <- in.In
 			} else {
 				log.Println("DATA EXTRACTION ERROR: out channel doesn't exist")
@@ -135,7 +124,7 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 			}
 		} else if rule.Target == EXTR_TARGET_HEADER {
 			// to make it more precise here
-			log.Println(rule.Target)
+			log.Println("ERROR: Extraction from", rule.Target, "is not implmented yet")
 		}
 	}
 }

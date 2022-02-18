@@ -50,8 +50,9 @@ func New(option ...Option) *Task {
 	return t
 }
 
-func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem) error {
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem) *Task {
 	go func() {
+		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
@@ -68,10 +69,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 			res.Body.Close()
 			log.Println(ts.Request.URL.Path, res.StatusCode)
 		}
+		ts.Executed = true
 	}()
-	return nil
-}
-
-func (ts *Task) Report(taskdata interface{}) interface{} {
-	return nil
+	return ts
 }

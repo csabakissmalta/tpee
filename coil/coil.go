@@ -68,9 +68,9 @@ func (c *Coil) Stop() error {
 	return nil
 }
 
-// The Coil needs to control timelines in a separate routines
+// The function is the engine's main task - run the test
 func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
-
+	// create the datastore
 	if c.DataStore == nil {
 		all_req_conf := []*execconf.ExecRequestsElem{}
 		for _, t := range c.Timelines {
@@ -88,6 +88,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 		log.Fatalf("DATA ERROR: %s", e.Error())
 	}
 
+	// The Coil needs to control timelines in a separate routines
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
