@@ -78,6 +78,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 		c.DataStore = datastore.New(
 			datastore.WithDataOutSocketNames(names),
 		)
+		c.DataStore.StartConsumingDataIn()
 	}
 
 	go func() {

@@ -52,21 +52,22 @@ func New(option ...Option) *DataBroadcaster {
 		o(db)
 	}
 	dataIn = make(chan *InUnsorted, IN_CHANNELS_BUFFER_SIZE)
-	db.startConsumingDataIn()
 	return db
 }
 
 func WithDataOutSocketNames(dss []string) Option {
 	d := []*Data{}
 	cases = []reflect.SelectCase{}
-	for i, nm := range dss {
-		d = append(d, &Data{
+
+	for _, nm := range dss {
+		_dq := &Data{
 			Name:  nm,
 			Queue: make(chan interface{}, OUT_CHANNELS_BUFFER_SIZE),
-		})
+		}
+		d = append(d, _dq)
 		_cs := reflect.SelectCase{
 			Dir:  reflect.SelectSend,
-			Chan: reflect.ValueOf(d[i].Queue),
+			Chan: reflect.ValueOf(_dq.Queue),
 			// Send: ,
 		}
 		cases = append(cases, _cs)
@@ -77,7 +78,7 @@ func WithDataOutSocketNames(dss []string) Option {
 	}
 }
 
-func (db *DataBroadcaster) startConsumingDataIn() {
+func (db *DataBroadcaster) StartConsumingDataIn() {
 	for {
 		select {
 		case in := <-dataIn:
