@@ -5,7 +5,6 @@
 package task
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -60,14 +59,6 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 
 		if res.StatusCode < 400 && len(extract_rules) > 0 {
 			go datastore.ExtractDataFromResponse(res, extract_rules)
-		} else if res.StatusCode >= 400 {
-			body, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				log.Println("ERROR:", err.Error())
-			}
-			log.Println(string(body))
-			res.Body.Close()
-			log.Println(ts.Request.URL.Path, res.StatusCode)
 		}
 		ts.Executed = true
 	}()
