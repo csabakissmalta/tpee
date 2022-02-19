@@ -52,7 +52,7 @@ func New(option ...Option) *Task {
 	return t
 }
 
-func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem) *Task {
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, r_ch chan *Task) *Task {
 	go func() {
 		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
@@ -64,6 +64,9 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 			go datastore.ExtractDataFromResponse(res, extract_rules)
 		}
 		ts.Executed = true
+		if r_ch != nil {
+			r_ch <- ts
+		}
 	}()
 	return ts
 }

@@ -104,10 +104,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 		}
 		// compose/execute task here
 		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
-		r := tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
-		if res_ch != nil {
-			res_ch <- r
-		}
+		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 
 		for {
 			next := <-tl.Tasks
@@ -116,10 +113,7 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 
 			// compose/execute task here
 			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
-			r = next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
-			if res_ch != nil {
-				res_ch <- r
-			}
+			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 			tl.CurrectTask = next
 		}
 	}()
