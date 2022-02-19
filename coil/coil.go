@@ -11,14 +11,16 @@ import (
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
 	request "github.com/csabakissmalta/tpee/request"
+	task "github.com/csabakissmalta/tpee/task"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
 type Coil struct {
-	Ctx       context.Context
-	Timelines []*timeline.Timeline
-	EnvVars   []*execconf.ExecEnvironmentElem
-	DataStore *datastore.DataBroadcaster
+	Ctx                     context.Context
+	Timelines               []*timeline.Timeline
+	EnvVars                 []*execconf.ExecEnvironmentElem
+	DataStore               *datastore.DataBroadcaster
+	ResultsReportingChannel chan *task.Task
 }
 
 type Option func(*Coil)
@@ -41,6 +43,12 @@ func WithEnvVariables(ev []*execconf.ExecEnvironmentElem) Option {
 	}
 }
 
+func WithResultsReportingChannel(ch chan *task.Task) Option {
+	return func(c *Coil) {
+		c.ResultsReportingChannel = ch
+	}
+}
+
 func New(option ...Option) *Coil {
 	c := &Coil{}
 	for _, o := range option {
@@ -54,7 +62,7 @@ func New(option ...Option) *Coil {
 // Should start always from the first element and progressively consume the tasks.
 func (c *Coil) Start() {
 	for _, tLine := range c.Timelines {
-		c.consumeTimeline(tLine, c.EnvVars)
+		c.consumeTimeline(tLine, c.EnvVars, c.ResultsReportingChannel)
 	}
 	<-make(chan bool)
 }
@@ -69,7 +77,7 @@ func (c *Coil) Stop() error {
 }
 
 // The function is the engine's main task - run the test
-func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem) {
+func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// create the datastore
 	if c.DataStore == nil {
 		all_req_conf := []*execconf.ExecRequestsElem{}
@@ -96,7 +104,10 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 		}
 		// compose/execute task here
 		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
-		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
+		r := tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
+		if res_ch != nil {
+			res_ch <- r
+		}
 
 		for {
 			next := <-tl.Tasks
@@ -105,7 +116,10 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 
 			// compose/execute task here
 			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
-			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
+			r = next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut)
+			if res_ch != nil {
+				res_ch <- r
+			}
 			tl.CurrectTask = next
 		}
 	}()
