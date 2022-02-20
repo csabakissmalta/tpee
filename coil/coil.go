@@ -165,8 +165,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			select {
 			case <-done:
 				return
-			case t := <-engine_ticker.C:
-				log.Println("Tick at", t)
+			case <-engine_ticker.C:
 				next := <-tl.Tasks
 				// compose/execute task here
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
