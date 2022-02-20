@@ -155,6 +155,10 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				return
 			case t := <-engine_ticker.C:
 				log.Println("Tick at", t)
+				next := <-tl.Tasks
+				// compose/execute task here
+				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
+				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 			}
 		}
 	}()
