@@ -144,17 +144,17 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 
 func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// Set the timer with the duration of the step size
-	engine_timer := *time.NewTimer(time.Duration(tl.StepDuration * int(time.Nanosecond)))
+	engine_ticker := *time.NewTicker(time.Duration(tl.StepDuration * int(time.Nanosecond)))
+	done := make(chan bool)
 
 	// Start the timer
 	go func() {
-		c := 0
 		for {
-			<-engine_timer.C
-			log.Println("EXEC TASK")
-			c++
-			if c == len(tl.Tasks) {
-				break
+			select {
+			case <-done:
+				return
+			case t := <-engine_ticker.C:
+				log.Println("Tick at", t)
 			}
 		}
 	}()
