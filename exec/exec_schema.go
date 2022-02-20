@@ -38,6 +38,54 @@ func (j *ExecEnvironmentElem) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Optional settings for influxdb reporting.
+type ExecInfluxdbSettings struct {
+	// The database/bucket name.
+	Database string `json:"database"`
+
+	// The database host.
+	DatabaseHost string `json:"database-host"`
+
+	// The organisation set for the database instance.
+	DatabaseOrg string `json:"database-org"`
+
+	// Influxdb2 uses tokens, this is the one to connect to the db.
+	DatabaseToken string `json:"database-token"`
+
+	// Measurement for the test data.
+	Measurement string `json:"measurement"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecInfluxdbSettings) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["database"]; !ok || v == nil {
+		return fmt.Errorf("field database: required")
+	}
+	if v, ok := raw["database-host"]; !ok || v == nil {
+		return fmt.Errorf("field database-host: required")
+	}
+	if v, ok := raw["database-org"]; !ok || v == nil {
+		return fmt.Errorf("field database-org: required")
+	}
+	if v, ok := raw["database-token"]; !ok || v == nil {
+		return fmt.Errorf("field database-token: required")
+	}
+	if v, ok := raw["measurement"]; !ok || v == nil {
+		return fmt.Errorf("field measurement: required")
+	}
+	type Plain ExecInfluxdbSettings
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ExecInfluxdbSettings(plain)
+	return nil
+}
+
 // The precise definition for the implementation where to find the required value
 // to save.
 type ExecRequestsElemDataPersistenceDataOutElem struct {
@@ -132,6 +180,9 @@ type Exec struct {
 
 	// Key/value pairs, defined for the test runtime.
 	Environment []*ExecEnvironmentElem `json:"environment,omitempty"`
+
+	// Optional settings for influxdb reporting.
+	InfluxdbSettings *ExecInfluxdbSettings `json:"influxdb-settings,omitempty"`
 
 	// The requests and their rate definition corresponding with the Postman
 	// collection
