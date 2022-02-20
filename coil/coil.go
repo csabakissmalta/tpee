@@ -15,12 +15,23 @@ import (
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
+const (
+	// DEFAULT: compares two timestamps next to each other and uses the duration between them to time the execution
+	COMPARE_TIMESTAMPS_MODE = "compare-timestamps-mode"
+
+	// runs a timer and executes, when the message is dispatched from the timer
+	GO_TIMER_MODE = "go-timer-mode"
+)
+
+var engine_timer time.Timer
+
 type Coil struct {
 	Ctx                     context.Context
 	Timelines               []*timeline.Timeline
 	EnvVars                 []*execconf.ExecEnvironmentElem
 	DataStore               *datastore.DataBroadcaster
 	ResultsReportingChannel chan *task.Task
+	ExecutionMode           string
 }
 
 type Option func(*Coil)
@@ -49,8 +60,16 @@ func WithResultsReportingChannel(ch chan *task.Task) Option {
 	}
 }
 
+func WithExecutionMode(em string) Option {
+	return func(c *Coil) {
+		c.ExecutionMode = em
+	}
+}
+
 func New(option ...Option) *Coil {
-	c := &Coil{}
+	c := &Coil{
+		ExecutionMode: COMPARE_TIMESTAMPS_MODE,
+	}
 	for _, o := range option {
 		o(c)
 	}
@@ -61,8 +80,14 @@ func New(option ...Option) *Coil {
 // It controls only the exact execution of the timeline
 // Should start always from the first element and progressively consume the tasks.
 func (c *Coil) Start() {
-	for _, tLine := range c.Timelines {
-		c.consumeTimeline(tLine, c.EnvVars, c.ResultsReportingChannel)
+	if c.ExecutionMode == COMPARE_TIMESTAMPS_MODE {
+		for _, tLine := range c.Timelines {
+			c.consumeTimelineCompareMode(tLine, c.EnvVars, c.ResultsReportingChannel)
+		}
+	} else if c.ExecutionMode == GO_TIMER_MODE {
+		for _, tLine := range c.Timelines {
+			c.consumeTimelineTimerMode(tLine, c.EnvVars, c.ResultsReportingChannel)
+		}
 	}
 	<-make(chan bool)
 }
@@ -77,7 +102,7 @@ func (c *Coil) Stop() error {
 }
 
 // The function is the engine's main task - run the test
-func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
+func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// create the datastore
 	if c.DataStore == nil {
 		all_req_conf := []*execconf.ExecRequestsElem{}
@@ -115,6 +140,23 @@ func (c *Coil) consumeTimeline(tl *timeline.Timeline, env []*execconf.ExecEnviro
 			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
 			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 			tl.CurrectTask = next
+		}
+	}()
+}
+
+func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
+	// Set the timer with the duration of the step size
+	engine_timer = *time.NewTimer(time.Duration(tl.StepDuration * int(time.Nanosecond)))
+
+	// Start the timer
+	go func() {
+		for {
+			select {
+			case t_msg := <-engine_timer.C:
+				log.Println(t_msg)
+			default:
+				log.Println("no msg")
+			}
 		}
 	}()
 }

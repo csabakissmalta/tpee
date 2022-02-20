@@ -4,6 +4,7 @@ package timeline
 
 import (
 	"net/http"
+	"time"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
@@ -32,6 +33,9 @@ type Timeline struct {
 
 	// HTTP client
 	HTTPClient *http.Client
+
+	// Step duration
+	StepDuration int
 }
 
 type Option func(*Timeline)
@@ -61,8 +65,16 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 	timeline_dimension := (dur - t.Rules.DelaySeconds) * t.Rules.Frequency
 	t.Feeds = load_feeds_if_required(timeline_dimension, env)
 
+	// The step between the markers
+	second := time.Second
+	convers := int(second / time.Nanosecond)
+	step := int(convers / t.Rules.Frequency)
+
+	// Set the step duration for the timeline as well
+	t.StepDuration = step
+
 	// Create time markers - empty tasks
-	t.Tasks = calc_periods(dur, t.Rules, r)
+	t.Tasks = calc_periods(dur, step, t.Rules, r)
 
 	// set the resulting postman request
 	t.RequestBlueprint = r
