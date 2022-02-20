@@ -134,6 +134,7 @@ func extractFromJSONBody(b []byte, key string) string {
 	e := json.Unmarshal(b, &intf)
 	if e != nil {
 		log.Println("DATA EXTRACTION ERROR:", e.Error())
+		return ""
 	}
 	result := intf[key].(string)
 	return result
