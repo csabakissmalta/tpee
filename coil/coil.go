@@ -78,12 +78,18 @@ func New(option ...Option) *Coil {
 // It controls only the exact execution of the timeline
 // Should start always from the first element and progressively consume the tasks.
 func (c *Coil) Start() {
-	if c.ExecutionMode == COMPARE_TIMESTAMPS_MODE {
-		for _, tLine := range c.Timelines {
+	// Create datastore
+	c.createDatastore()
+
+	for _, tLine := range c.Timelines {
+		// Validate timeline data before start
+		c.validateTimelineData(tLine)
+
+		if c.ExecutionMode == COMPARE_TIMESTAMPS_MODE {
+			// Start consuming compare mode
 			c.consumeTimelineCompareMode(tLine, c.EnvVars, c.ResultsReportingChannel)
-		}
-	} else if c.ExecutionMode == GO_TIMER_MODE {
-		for _, tLine := range c.Timelines {
+		} else if c.ExecutionMode == GO_TIMER_MODE {
+			// Start consuming timer mode
 			c.consumeTimelineTimerMode(tLine, c.EnvVars, c.ResultsReportingChannel)
 		}
 	}
@@ -99,26 +105,31 @@ func (c *Coil) Stop() error {
 	return nil
 }
 
-// The function is the engine's main task - run the test
-func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
+// Datastore
+func (c *Coil) createDatastore() {
 	// create the datastore
-	if c.DataStore == nil {
-		all_req_conf := []*execconf.ExecRequestsElem{}
-		for _, t := range c.Timelines {
-			all_req_conf = append(all_req_conf, t.Rules)
-		}
-		names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
-		c.DataStore = datastore.New(
-			datastore.WithDataOutSocketNames(names),
-		)
-		go c.DataStore.StartConsumingDataIn()
+	all_req_conf := []*execconf.ExecRequestsElem{}
+	for _, t := range c.Timelines {
+		all_req_conf = append(all_req_conf, t.Rules)
 	}
+	names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
+	c.DataStore = datastore.New(
+		datastore.WithDataOutSocketNames(names),
+	)
+	go c.DataStore.StartConsumingDataIn()
+}
 
+// Validate timeline data
+func (c *Coil) validateTimelineData(tl *timeline.Timeline) {
+	// validate
 	e := timeline.CheckPostmanRequestAndValidateRequirements(tl.RequestBlueprint, c.EnvVars)
 	if e != nil {
 		log.Fatalf("DATA ERROR: %s", e.Error())
 	}
+}
 
+// The function is the engine's main task - run the test
+func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// The Coil needs to control timelines in a separate routines
 	go func() {
 		tl.CurrectTask = <-tl.Tasks
@@ -149,6 +160,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 	// Start the timer
 	go func() {
+		cntr := 0
 		for {
 			select {
 			case <-done:
@@ -159,6 +171,10 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				// compose/execute task here
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
+				cntr++
+				if cntr == len(tl.Tasks) {
+					return
+				}
 			}
 		}
 	}()
