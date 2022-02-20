@@ -28,6 +28,9 @@ type Task struct {
 
 	// Response
 	Response *http.Response
+
+	// Response receive time
+	ResponseTime int64
 }
 
 type Option func(*Task)
@@ -59,6 +62,8 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
+
+		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
 		if res.StatusCode < 400 && len(extract_rules) > 0 {
 			go datastore.ExtractDataFromResponse(res, extract_rules)
