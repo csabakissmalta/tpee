@@ -23,8 +23,6 @@ const (
 	GO_TIMER_MODE = "go-timer-mode"
 )
 
-var engine_timer time.Timer
-
 type Coil struct {
 	Ctx                     context.Context
 	Timelines               []*timeline.Timeline
@@ -146,7 +144,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 
 func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// Set the timer with the duration of the step size
-	engine_timer = *time.NewTimer(time.Duration(tl.StepDuration * int(time.Nanosecond)))
+	engine_timer := *time.NewTimer(time.Duration(tl.StepDuration * int(time.Nanosecond)))
 
 	// Start the timer
 	go func() {
