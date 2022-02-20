@@ -150,12 +150,13 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 	// Start the timer
 	go func() {
+		c := 0
 		for {
-			select {
-			case t_msg := <-engine_timer.C:
-				log.Println(t_msg)
-			default:
-				log.Println("no msg")
+			<-engine_timer.C
+			log.Println("EXEC TASK")
+			c++
+			if c == len(tl.Tasks) {
+				break
 			}
 		}
 	}()
