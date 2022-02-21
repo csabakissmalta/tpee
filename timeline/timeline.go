@@ -52,6 +52,12 @@ func WithHTTPClient(c *http.Client) Option {
 	}
 }
 
+func WithName(n string) Option {
+	return func(t *Timeline) {
+		t.Name = n
+	}
+}
+
 func New(option ...Option) *Timeline {
 	tl := &Timeline{}
 	for _, o := range option {
