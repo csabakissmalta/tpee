@@ -31,6 +31,9 @@ type Task struct {
 
 	// Response receive time
 	ResponseTime int64
+
+	// Task label for reporting
+	TaskLabel string
 }
 
 type Option func(*Task)
@@ -44,6 +47,12 @@ func WithRequest(req *http.Request) Option {
 func WithPlannedExecTimeNanos(n int) Option {
 	return func(t *Task) {
 		t.PlannedExecTimeNanos = n
+	}
+}
+
+func WithLabel(l string) Option {
+	return func(t *Task) {
+		t.TaskLabel = l
 	}
 }
 

@@ -77,6 +77,7 @@ func calc_periods(dur int, step int, er *execconf.ExecRequestsElem, rq *postman.
 		curr_step := i * step
 		ch <- task.New(
 			task.WithPlannedExecTimeNanos(curr_step),
+			task.WithLabel(er.Name),
 		)
 	}
 	return ch
@@ -110,7 +111,6 @@ func validate_and_substitute(src *string, rgx *regexp.Regexp, env []*execconf.Ex
 			return fmt.Errorf("%s env variable for URL: %s is not set", match[1], *src)
 		}
 		*src = strings.Replace(*src, match[0], val, -1)
-		// log.Println(*src)
 	}
 	return nil
 }
