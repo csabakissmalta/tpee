@@ -173,6 +173,37 @@ func (j *ExecRequestsElem) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// The HDR Histogram output settings.
+type ExecHdrHistogramSettings struct {
+	// The base path, where the files should be saved
+	BaseOutPath string `json:"base-out-path"`
+
+	// The additional identifier for the set of files from the test. Can be the tesyed
+	// version of subject.
+	VersionLabel string `json:"version-label"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecHdrHistogramSettings) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok := raw["base-out-path"]; !ok || v == nil {
+		return fmt.Errorf("field base-out-path: required")
+	}
+	if v, ok := raw["version-label"]; !ok || v == nil {
+		return fmt.Errorf("field version-label: required")
+	}
+	type Plain ExecHdrHistogramSettings
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	*j = ExecHdrHistogramSettings(plain)
+	return nil
+}
+
 // Perforamnce test execution configuration schema
 type Exec struct {
 	// Test duration in seconds
@@ -183,6 +214,9 @@ type Exec struct {
 
 	// Optional settings for influxdb reporting.
 	InfluxdbSettings *ExecInfluxdbSettings `json:"influxdb-settings,omitempty"`
+
+	// The HDR Histogram output settings.
+	HdrHistogramSettings *ExecHdrHistogramSettings `json:"hdr-histogram-settings,omitempty"`
 
 	// The requests and their rate definition corresponding with the Postman
 	// collection
