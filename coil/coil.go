@@ -160,7 +160,6 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 	// Start the timer
 	go func() {
-		cntr := 0
 		for {
 			select {
 			case <-done:
@@ -170,10 +169,6 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				// compose/execute task here
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
-				cntr++
-				if cntr == len(tl.Tasks) {
-					return
-				}
 			}
 		}
 	}()
