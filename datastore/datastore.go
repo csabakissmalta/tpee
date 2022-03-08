@@ -86,6 +86,12 @@ func (db *DataBroadcaster) StartConsumingDataIn() {
 			ch_obj := db.getDataChannelByName(in.Name)
 			if ch_obj != nil {
 				ch_obj.Queue <- in.In
+
+				// this is the ringbuffer-like trait
+				// if the buffer is full, it will remove an element to unblock the queue
+				if len(ch_obj.Queue) == OUT_CHANNELS_BUFFER_SIZE {
+					<-ch_obj.Queue
+				}
 			} else {
 				log.Println("DATA EXTRACTION ERROR: out channel doesn't exist")
 			}

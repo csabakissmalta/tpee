@@ -61,6 +61,7 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 		}
 		env_var_replace_string = <-ch
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
+		ch <- env_var_replace_string
 		return out, nil
 	}
 	return *in, nil
