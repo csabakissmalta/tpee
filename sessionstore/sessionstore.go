@@ -2,7 +2,6 @@ package sessionstore
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"time"
 )
@@ -55,7 +54,7 @@ func (s *Store) Start() {
 			// check session validity
 			if time.Since(ns.Created) < SESSION_VALIDITY {
 				s.SessionOut <- ns
-				log.Println("items in out:", len(s.SessionOut))
+				// log.Println("items in out:", len(s.SessionOut))
 			}
 		default:
 			continue
