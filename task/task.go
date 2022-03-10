@@ -76,7 +76,6 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
 		if res.StatusCode < 400 && len(extract_rules) > 0 {
-			go datastore.ExtractDataFromResponse(res, extract_rules)
 			log.Println("---")
 			log.Println(extract_session)
 			if extract_session {
@@ -85,6 +84,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 					log.Printf("ERROR: %s", e.Error())
 				}
 			}
+			go datastore.ExtractDataFromResponse(res, extract_rules)
 		}
 		ts.Executed = true
 		if r_ch != nil {
