@@ -91,15 +91,18 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 
-			for {
-				sess = <-ss.SessionOut
-				if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
-					for _, c := range sess.ID.([]*http.Cookie) {
-						if sessionvar_name == c.Name {
-							env_var_replace_string = c.Value
-						}
+			if sess == nil {
+				for {
+					sess = <-ss.SessionOut
+					if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
+						break
 					}
-					break
+				}
+			}
+
+			for _, c := range sess.ID.([]*http.Cookie) {
+				if sessionvar_name == c.Name {
+					env_var_replace_string = c.Value
 				}
 			}
 
