@@ -110,7 +110,9 @@ func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.Exe
 		if !exists {
 			return "", fmt.Errorf("%s env variable for URL: %s is not set", match[1], src)
 		}
-		return strings.Replace(src, match[0], val, -1), nil
+		rpl := strings.Replace(src, match[0], val, -1)
+		log.Println(rpl)
+		return rpl, nil
 	}
 	return "", nil
 }
