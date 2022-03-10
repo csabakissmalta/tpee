@@ -121,10 +121,12 @@ func (c *Coil) createDatastore() {
 		all_req_conf = append(all_req_conf, t.Rules)
 	}
 	names := execconf.GetAllDataPersistenceDataNames(all_req_conf)
-	c.DataStore = datastore.New(
-		datastore.WithDataOutSocketNames(names),
-	)
-	go c.DataStore.StartConsumingDataIn()
+	if len(names) > 0 {
+		c.DataStore = datastore.New(
+			datastore.WithDataOutSocketNames(names),
+		)
+		go c.DataStore.StartConsumingDataIn()
+	}
 }
 
 func (c *Coil) createSessionstore() {
