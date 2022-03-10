@@ -105,7 +105,6 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) []*Fee
 
 func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) (string, error) {
 	match := rgx.FindStringSubmatch(src)
-	log.Println("MATCH:", match)
 	if len(match) > 1 {
 		exists, val := check_env_var_set(match[1], env)
 		if !exists {
