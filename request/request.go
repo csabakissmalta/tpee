@@ -137,6 +137,8 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// --- Headers ---
 	for _, hdr := range p.Header {
+		log.Println(hdr)
+		log.Println("---")
 		out, err := validate_and_substitute(&hdr.Value, r, rds, rss, fds, ds, ss)
 		if err != nil {
 			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
