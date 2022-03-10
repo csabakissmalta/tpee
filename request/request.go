@@ -103,12 +103,6 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 		r_res.Header.Set("Content-Type", wtr.FormDataContentType())
 	}
 
-	// --- Headers ---
-	for _, hdr := range p.Header {
-		log.Println(hdr.Key, hdr.Value)
-		r_res.Header.Add(hdr.Key, hdr.Value)
-	}
-
 	if p.Auth.Type != "" {
 		switch p.Auth.Type {
 		case "basic":
@@ -139,6 +133,12 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 		default:
 			log.Printf("ERROR: Auth type %s is not implemented yet", p.Auth.Type)
 		}
+	}
+
+	// --- Headers ---
+	for _, hdr := range p.Header {
+		log.Println(hdr.Key, hdr.Value)
+		r_res.Header.Add(hdr.Key, hdr.Value)
 	}
 
 	task.WithRequest(r_res)(t)
