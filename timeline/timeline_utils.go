@@ -107,7 +107,7 @@ func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.Exe
 	match := rgx.FindStringSubmatch(src)
 	var rpl string = src
 	if len(match) > 1 {
-		for i := 0; i < len(match); i++ {
+		for i := 0; i < len(match)-1; i++ {
 			exists, val := check_env_var_set(match[i+1], env)
 			if !exists {
 				return "", fmt.Errorf("%s env variable for URL: %s is not set", match[i+1], src)
