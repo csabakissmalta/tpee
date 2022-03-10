@@ -21,6 +21,8 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	match_channel := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindStringSubmatch(*in)
 
+	log.Println(match_session)
+
 	var ch chan interface{}
 	var feed_varname string
 	var sessionvar_name string
@@ -99,7 +101,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		}
 
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
-		log.Println(out)
 		ss.SessionIn <- sess
 		return out, nil
 	}
