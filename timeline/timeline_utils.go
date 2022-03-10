@@ -103,15 +103,15 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) []*Fee
 	return fds
 }
 
-func validate_and_substitute(src *string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) error {
-	match := rgx.FindStringSubmatch(*src)
+func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) (string, error) {
+	match := rgx.FindStringSubmatch(src)
 	log.Println("MATCH:", match)
 	if len(match) > 1 {
 		exists, val := check_env_var_set(match[1], env)
 		if !exists {
-			return fmt.Errorf("%s env variable for URL: %s is not set", match[1], *src)
+			return "", fmt.Errorf("%s env variable for URL: %s is not set", match[1], src)
 		}
-		*src = strings.Replace(*src, match[0], val, -1)
+		return strings.Replace(src, match[0], val, -1), nil
 	}
-	return nil
+	return "", nil
 }

@@ -88,56 +88,58 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
 	// check URL raw
-	e := validate_and_substitute(&pr.URL.Raw, r, env)
+	res, e := validate_and_substitute(pr.URL.Raw, r, env)
 	if e != nil {
 		return e
 	}
+	pr.URL.Raw = res
 	for i, h := range pr.URL.Host {
-		e = validate_and_substitute(&h, r, env)
+		res, e = validate_and_substitute(h, r, env)
 		if e != nil {
 			return e
 		}
-		pr.URL.Host[i] = h
+		pr.URL.Host[i] = res
 	}
 	for j, p := range pr.URL.Path {
-		e = validate_and_substitute(&p, r, env)
+		res, e = validate_and_substitute(p, r, env)
 		if e != nil {
 			return e
 		}
-		pr.URL.Path[j] = p
+		pr.URL.Path[j] = res
 	}
 
 	// check Headers
 	for k, hdr := range pr.Header {
-		e = validate_and_substitute(&hdr.Value, r, env)
+		res, e = validate_and_substitute(hdr.Value, r, env)
 		if e != nil {
 			return e
 		}
-		pr.Header[k].Value = hdr.Value
+		pr.Header[k].Value = res
 	}
 	// check body
 	if len(pr.Body.Raw) > 0 {
-		e = validate_and_substitute(&pr.Body.Raw, r, env)
+		res, e = validate_and_substitute(pr.Body.Raw, r, env)
 		if e != nil {
 			return e
 		}
+		pr.Body.Raw = res
 	}
 	if len(pr.Body.Formdata) > 0 {
 		for l, fd := range pr.Body.Formdata {
-			e = validate_and_substitute(&fd.Value, r, env)
+			res, e = validate_and_substitute(fd.Value, r, env)
 			if e != nil {
 				return e
 			}
-			pr.Body.Formdata[l].Value = fd.Value
+			pr.Body.Formdata[l].Value = res
 		}
 	}
 	if len(pr.Body.Urlencoded) > 0 {
 		for l, ue := range pr.Body.Urlencoded {
-			e = validate_and_substitute(&ue.Value, r, env)
+			res, e = validate_and_substitute(ue.Value, r, env)
 			if e != nil {
 				return e
 			}
-			pr.Body.Urlencoded[l].Value = ue.Value
+			pr.Body.Urlencoded[l].Value = res
 		}
 	}
 	return nil
