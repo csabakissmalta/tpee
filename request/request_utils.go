@@ -8,7 +8,7 @@ import (
 	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
-	"github.com/csabakissmalta/tpee/sessionstore"
+	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
@@ -76,11 +76,11 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	// check SESSION var match
 	if len(match_session) > 0 {
 		for i, name := range r_ds.SubexpNames() {
-			if i > 0 && i <= len(match_channel) {
+			if i > 0 && i <= len(match_session) {
 				if name == "SESSIONVAR" {
-					sessionvar_name = match_channel[i]
+					sessionvar_name = match_session[i]
 				} else if name == "WHOLE" {
-					env_var_to_replace = match_channel[i]
+					env_var_to_replace = match_session[i]
 				}
 			}
 		}

@@ -146,17 +146,3 @@ func extractFromJSONBody(b []byte, key string) string {
 	result := intf[key].(string)
 	return result
 }
-
-// var sess *sessionstore.Session
-// 			for _, c := range resp.Cookies() {
-// 				if rule.Name == &c.Name {
-// 					// this is the cookies to be stored
-// 					// usually it is a session
-// 					sess = sessionstore.NewSession(
-// 						sessionstore.WithID(resp.Cookies()),
-// 						sessionstore.WithTimeCreatedNow(),
-// 					)
-// 					break
-// 				}
-// 			}
-// 			log.Println(sess)
