@@ -117,5 +117,5 @@ func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.Exe
 		}
 		return rpl, nil
 	}
-	return "", nil
+	return src, nil
 }
