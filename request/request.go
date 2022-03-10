@@ -133,6 +133,8 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
 			r_res.Header.Add("Authorization", "Bearer"+out)
+		case "noauth":
+			// do nothing
 		default:
 			log.Printf("ERROR: Auth type %s is not implemented yet", p.Auth.Type)
 		}
