@@ -70,6 +70,8 @@ func (s *Store) Start() {
 // Extracts client session from an http resonse
 // the extracted session is set and pushed to the in channel of the sessionstore
 func (s *Store) ExtractClientSessionFromResponse(resp *http.Response) error {
+	log.Println("****")
+	log.Println(resp.Cookies())
 	if len(resp.Cookies()) > 0 {
 		s.SessionIn <- NewSession(
 			// The session id represented by the cookies
@@ -78,8 +80,6 @@ func (s *Store) ExtractClientSessionFromResponse(resp *http.Response) error {
 			// the session is also timestamped for time validation
 			WithTimeCreatedNow(),
 		)
-		log.Println("****")
-		log.Println(resp.Cookies())
 		return nil
 	} else {
 		return errors.New("could not extract session from response")
