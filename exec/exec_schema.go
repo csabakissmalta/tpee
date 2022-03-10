@@ -121,6 +121,9 @@ func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) err
 }
 
 type ExecRequestsElem struct {
+	// Definition for the request, whether creates or uses session
+	CreatesSession *bool `json:"creates-session,omitempty"`
+
 	// The wrapper to define sticky data dependency and generation properties.
 	DataPersistence *ExecRequestsElemDataPersistence `json:"data-persistence,omitempty"`
 
