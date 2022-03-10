@@ -55,6 +55,7 @@ func (s *Store) Start() {
 			// check session validity
 			if time.Since(ns.Created) < SESSION_VALIDITY {
 				s.SessionOut <- ns
+				log.Println("items in out:", len(s.SessionOut))
 			}
 		default:
 			continue
@@ -78,7 +79,6 @@ func (s *Store) ExtractClientSessionFromResponse(resp *http.Response) error {
 			// the session is also timestamped for time validation
 			WithTimeCreatedNow(),
 		)
-		log.Println(resp.Cookies())
 		return nil
 	} else {
 		return errors.New("could not extract session from response")
