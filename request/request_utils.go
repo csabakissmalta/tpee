@@ -21,7 +21,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	match_channel := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
 
-	// log.Println(match_session)
+	log.Println(match_session)
 
 	var ch chan interface{}
 	var feed_varname string
@@ -77,7 +77,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check SESSION var match
 	if len(match_session) > 0 {
-		log.Println(match_session)
+		// log.Println(match_session)
 		var out string = *in
 		var sess *sessionstore.Session
 
