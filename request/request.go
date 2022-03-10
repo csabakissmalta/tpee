@@ -142,7 +142,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 		}
 		log.Println(out)
-		r_res.Header.Set(hdr.Key, out)
+		// r_res.Header.Set(hdr.Key, out)
 		// r_res.Header.Add(hdr.Key, hdr.Value)
 	}
 
