@@ -11,6 +11,7 @@ import (
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconfig "github.com/csabakissmalta/tpee/exec"
+	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 )
 
 type Task struct {
@@ -64,7 +65,7 @@ func New(option ...Option) *Task {
 	return t
 }
 
-func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, r_ch chan *Task) *Task {
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store) *Task {
 	go func() {
 		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
@@ -76,6 +77,14 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		ts.Response = res
 		if res.StatusCode < 400 && len(extract_rules) > 0 {
 			go datastore.ExtractDataFromResponse(res, extract_rules)
+			if extract_session {
+				go func() {
+					e := ss.ExtractClientSessionFromResponse(res)
+					if e != nil {
+						log.Printf("ERROR: %s", e.Error())
+					}
+				}()
+			}
 		}
 		ts.Executed = true
 		if r_ch != nil {
