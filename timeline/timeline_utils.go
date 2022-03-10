@@ -108,11 +108,12 @@ func validate_and_substitute(src *string, rgx *regexp.Regexp, env []*execconf.Ex
 	var rslt string = *src
 	if len(match) > 1 {
 		for _, m := range match[1:] {
+			log.Println(m)
 			exists, val := check_env_var_set(m, env)
 			if !exists {
 				return fmt.Errorf("%s env variable for URL: %s is not set", m, *src)
 			}
-			rslt = strings.Replace(rslt, m, val, -1)
+			rslt = strings.Replace(rslt, match[0], val, -1)
 			log.Println(*src)
 		}
 	}
