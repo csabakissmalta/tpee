@@ -77,13 +77,13 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		ts.Response = res
 		if res.StatusCode < 400 && len(extract_rules) > 0 {
 			go datastore.ExtractDataFromResponse(res, extract_rules)
+			log.Println("---")
+			log.Println(extract_session)
 			if extract_session {
-				go func() {
-					e := ss.ExtractClientSessionFromResponse(res)
-					if e != nil {
-						log.Printf("ERROR: %s", e.Error())
-					}
-				}()
+				e := ss.ExtractClientSessionFromResponse(res)
+				if e != nil {
+					log.Printf("ERROR: %s", e.Error())
+				}
 			}
 		}
 		ts.Executed = true
