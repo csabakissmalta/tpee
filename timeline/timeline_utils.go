@@ -104,15 +104,15 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) []*Fee
 }
 
 func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) (string, error) {
-	match := rgx.FindStringSubmatch(src)
+	match := rgx.FindAllStringSubmatch(src, -1)
 	var rpl string = src
-	if len(match) > 1 {
-		for i := 0; i < len(match)-1; i++ {
-			exists, val := check_env_var_set(match[i+1], env)
+	if len(match) > 0 {
+		for _, mtch := range match {
+			exists, val := check_env_var_set(mtch[1], env)
 			if !exists {
-				return "", fmt.Errorf("%s env variable for URL: %s is not set", match[i+1], src)
+				return "", fmt.Errorf("%s env variable for URL: %s is not set", mtch[1], src)
 			}
-			rpl = strings.Replace(rpl, match[i], val, -1)
+			rpl = strings.Replace(rpl, mtch[0], val, -1)
 			log.Println(rpl)
 		}
 		return rpl, nil
