@@ -14,19 +14,26 @@ import (
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
+	"github.com/csabakissmalta/tpee/sessionstore"
 	task "github.com/csabakissmalta/tpee/task"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
 // Mostly the executable request's lifecycle-related operations
 
+// --------------- REGEXP DEFINITIONS ---------------
 // Regex to get the substitution variable name (max length 30 characters)
 var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>[a-z0-9-_]{1,30})[|]{1}.+[\+])`)
 
 // Regex to get the substitution variable for the datastore
 var rds = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<CHAN>[a-z0-9\-_]{1,30})[\>]{1})`)
 
-func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster) (*task.Task, error) {
+// Regex to get the substitution variable for SESSION variables
+var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[a-z0-9\-_]{1,30})[\>]{1})`)
+
+// ---------------------------------------------------
+
+func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
 	var req_url string
 	var req_method string = p.Method
 	var r_res *http.Request
@@ -34,9 +41,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// check the postman request
 	// --- URL.Raw ---
-	out, err := validate_and_substitute_feed_type(&p.URL.Raw, r, rds, fds, ds)
+	out, err := validate_and_substitute(&p.URL.Raw, r, rds, rss, fds, ds, ss)
 	if err != nil {
-		log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+		log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 	}
 	req_url = out
 
@@ -44,9 +51,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 	if len(p.Body.Urlencoded) > 0 {
 		body_urlencoded := url.Values{}
 		for _, b := range p.Body.Urlencoded {
-			out, err := validate_and_substitute_feed_type(&b.Value, r, rds, fds, ds)
+			out, err := validate_and_substitute(&b.Value, r, rds, rss, fds, ds, ss)
 			if err != nil {
-				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
 			body_urlencoded.Set(b.Key, out)
 		}
@@ -60,9 +67,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// --- Body if Raw ---
 	if len(p.Body.Raw) > 0 {
-		out, err := validate_and_substitute_feed_type(&p.Body.Raw, r, rds, fds, ds)
+		out, err := validate_and_substitute(&p.Body.Raw, r, rds, rss, fds, ds, ss)
 		if err != nil {
-			log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 		}
 		r_res, err = http.NewRequest(req_method, req_url, bytes.NewBuffer([]byte(out)))
 		if err != nil {
@@ -79,9 +86,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 			if err != nil {
 				log.Printf("ERROR: %s", err.Error())
 			}
-			out, err := validate_and_substitute_feed_type(&fd.Value, r, rds, fds, ds)
+			out, err := validate_and_substitute(&fd.Value, r, rds, rss, fds, ds, ss)
 			if err != nil {
-				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
 			_, err = io.Copy(fw, strings.NewReader(out))
 			if err != nil {
@@ -121,9 +128,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 					token = autAttr.Value.(string)
 				}
 			}
-			out, err := validate_and_substitute_feed_type(&token, r, rds, fds, ds)
+			out, err := validate_and_substitute(&token, r, rds, rss, fds, ds, ss)
 			if err != nil {
-				log.Printf("SUBSTITUTE FEED VAR ERROR: %s", err.Error())
+				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
 			r_res.Header.Add("Authorization", "Bearer"+out)
 		default:

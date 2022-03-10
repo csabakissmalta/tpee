@@ -1,10 +1,13 @@
 package request
 
 import (
+	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
+	"github.com/csabakissmalta/tpee/sessionstore"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
@@ -12,15 +15,18 @@ import (
 // 	return ""
 // }
 
-func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster) (string, error) {
+func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (string, error) {
 	match_feed := r_var.FindStringSubmatch(*in)
 	match_channel := r_ds.FindStringSubmatch(*in)
+	match_session := r_ss.FindStringSubmatch(*in)
 
 	var ch chan interface{}
 	var feed_varname string
+	var sessionvar_name string
 	var env_var_to_replace string
 	var env_var_replace_string interface{}
 
+	// check FEED var match
 	if len(match_feed) > 0 {
 		for i, name := range r_var.SubexpNames() {
 			if i > 0 && i <= len(match_feed) {
@@ -43,6 +49,7 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 		return out, nil
 	}
 
+	// check DATA var match
 	if len(match_channel) > 0 {
 		for i, name := range r_ds.SubexpNames() {
 			if i > 0 && i <= len(match_channel) {
@@ -62,6 +69,36 @@ func validate_and_substitute_feed_type(in *string, r_var *regexp.Regexp, r_ds *r
 		env_var_replace_string = <-ch
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 		ch <- env_var_replace_string
+		return out, nil
+	}
+
+	// check SESSION var match
+	if len(match_session) > 0 {
+		for i, name := range r_ds.SubexpNames() {
+			if i > 0 && i <= len(match_channel) {
+				if name == "SESSIONVAR" {
+					sessionvar_name = match_channel[i]
+				} else if name == "WHOLE" {
+					env_var_to_replace = match_channel[i]
+				}
+			}
+		}
+
+		var sess *sessionstore.Session
+		for {
+			sess = <-ss.SessionOut
+			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
+				for _, c := range sess.ID.([]*http.Cookie) {
+					if sessionvar_name == c.Name {
+						env_var_replace_string = c.Value
+					}
+				}
+				break
+			}
+		}
+
+		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
+		ss.SessionIn <- sess
 		return out, nil
 	}
 	return *in, nil

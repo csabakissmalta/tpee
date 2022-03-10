@@ -6,6 +6,7 @@ const (
 	STRING_VALUE    = "stringValue"
 	FEED_VALUE      = "feedValue"
 	GENERATED_VALUE = "generatedValue"
+	SESSION_VALUE   = "sessionValue"
 )
 
 func (ex *Exec) LoadExecConfig(path string) error {

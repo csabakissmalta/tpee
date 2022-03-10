@@ -11,6 +11,7 @@ import (
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
 	request "github.com/csabakissmalta/tpee/request"
+	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 	task "github.com/csabakissmalta/tpee/task"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
@@ -23,11 +24,15 @@ const (
 	GO_TIMER_MODE = "go-timer-mode"
 )
 
+// sessionstore capacity - default value
+var SESSION_STORE_CAPACITY int = sessionstore.STORE_CAPACITY
+
 type Coil struct {
 	Ctx                     context.Context
 	Timelines               []*timeline.Timeline
 	EnvVars                 []*execconf.ExecEnvironmentElem
 	DataStore               *datastore.DataBroadcaster
+	SessionStore            *sessionstore.Store
 	ResultsReportingChannel chan *task.Task
 	ExecutionMode           string
 }
@@ -81,6 +86,9 @@ func (c *Coil) Start() {
 	// Create datastore
 	c.createDatastore()
 
+	// Create sessionstore
+	c.createSessionstore()
+
 	for _, tLine := range c.Timelines {
 		// Validate timeline data before start
 		c.validateTimelineData(tLine)
@@ -119,6 +127,13 @@ func (c *Coil) createDatastore() {
 	go c.DataStore.StartConsumingDataIn()
 }
 
+func (c *Coil) createSessionstore() {
+	c.SessionStore = sessionstore.NewStore(
+		sessionstore.WithInOutCapacity(SESSION_STORE_CAPACITY),
+	)
+	go c.SessionStore.Start()
+}
+
 // Validate timeline data
 func (c *Coil) validateTimelineData(tl *timeline.Timeline) {
 	// validate
@@ -137,7 +152,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 			time.Sleep(time.Duration(tl.CurrectTask.PlannedExecTimeNanos * int(time.Nanosecond)))
 		}
 		// compose/execute task here
-		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
+		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 
 		for {
@@ -146,7 +161,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 			time.Sleep(time.Duration(dorm_period))
 
 			// compose/execute task here
-			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
+			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 			tl.CurrectTask = next
 		}
@@ -167,7 +182,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			case <-engine_ticker.C:
 				next := <-tl.Tasks
 				// compose/execute task here
-				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore)
+				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch)
 			}
 		}
