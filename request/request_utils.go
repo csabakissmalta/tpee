@@ -18,7 +18,7 @@ import (
 func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (string, error) {
 	match_feed := r_var.FindStringSubmatch(*in)
 	match_channel := r_ds.FindStringSubmatch(*in)
-	match_session := r_ss.FindStringSubmatch(*in)
+	match_session := r_ss.FindAllStringSubmatch(*in, -1)
 
 	// log.Println(match_session)
 
@@ -76,30 +76,35 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check SESSION var match
 	if len(match_session) > 0 {
-		for i, name := range r_ss.SubexpNames() {
-			if i > 0 && i <= len(match_session) {
-				if name == "SESSIONVAR" {
-					sessionvar_name = match_session[i]
-				} else if name == "WHOLE" {
-					env_var_to_replace = match_session[i]
-				}
-			}
-		}
-
+		var out string = *in
 		var sess *sessionstore.Session
-		for {
-			sess = <-ss.SessionOut
-			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
-				for _, c := range sess.ID.([]*http.Cookie) {
-					if sessionvar_name == c.Name {
-						env_var_replace_string = c.Value
+
+		for _, mtch := range match_session {
+			for i, name := range r_ss.SubexpNames() {
+				if i > 0 && i <= len(match_session) {
+					if name == "SESSIONVAR" {
+						sessionvar_name = mtch[i]
+					} else if name == "WHOLE" {
+						env_var_to_replace = mtch[i]
 					}
 				}
-				break
 			}
+
+			for {
+				sess = <-ss.SessionOut
+				if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
+					for _, c := range sess.ID.([]*http.Cookie) {
+						if sessionvar_name == c.Name {
+							env_var_replace_string = c.Value
+						}
+					}
+					break
+				}
+			}
+
+			out = strings.Replace(out, env_var_to_replace, env_var_replace_string.(string), -1)
 		}
 
-		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string.(string), -1)
 		ss.SessionIn <- sess
 		return out, nil
 	}
