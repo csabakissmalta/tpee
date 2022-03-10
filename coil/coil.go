@@ -184,6 +184,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			case <-engine_ticker.C:
 				next := <-tl.Tasks
 				// compose/execute task here
+				log.Println("===")
+				log.Println(*tl.Rules.CreatesSession)
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
 			}
