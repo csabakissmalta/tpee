@@ -2,6 +2,7 @@ package sessionstore
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -77,6 +78,7 @@ func (s *Store) ExtractClientSessionFromResponse(resp *http.Response) error {
 			// the session is also timestamped for time validation
 			WithTimeCreatedNow(),
 		)
+		log.Println(resp.Cookies())
 		return nil
 	} else {
 		return errors.New("could not extract session from response")
