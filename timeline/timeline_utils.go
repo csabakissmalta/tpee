@@ -113,7 +113,7 @@ func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.Exe
 				return "", fmt.Errorf("%s env variable for URL: %s is not set", mtch[1], src)
 			}
 			rpl = strings.Replace(rpl, mtch[0], val, -1)
-			log.Println(rpl)
+			// log.Println(rpl)
 		}
 		return rpl, nil
 	}
