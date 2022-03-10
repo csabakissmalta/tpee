@@ -75,7 +75,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check SESSION var match
 	if len(match_session) > 0 {
-		for i, name := range r_ds.SubexpNames() {
+		for i, name := range r_ss.SubexpNames() {
 			if i > 0 && i <= len(match_session) {
 				if name == "SESSIONVAR" {
 					sessionvar_name = match_session[i]
