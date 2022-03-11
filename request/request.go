@@ -29,7 +29,7 @@ var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>[a-z0-9-_]{1,30})[|]{1
 var rds = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<CHAN>[a-z0-9\-_]{1,30})[\>]{1})`)
 
 // Regex to get the substitution variable for SESSION variables
-var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[a-z0-9\-_]{1,30})[\>]{1})`)
+var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,30})[\>]{1})`)
 
 // ---------------------------------------------------
 
