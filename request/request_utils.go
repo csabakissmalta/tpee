@@ -21,8 +21,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	match_channel := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
 
-	log.Println(match_session)
-
 	var ch chan interface{}
 	var feed_varname string
 	var sessionvar_name string
@@ -102,9 +100,13 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 
 			for _, c := range sess.ID.([]*http.Cookie) {
+				log.Println(c.Name)
+				log.Println(c.Value)
+				log.Println(sessionvar_name)
 				if sessionvar_name == c.Name {
 					env_var_replace_string = c.Value
 				}
+				log.Println("---")
 			}
 
 			out = strings.Replace(out, env_var_to_replace, env_var_replace_string.(string), -1)
