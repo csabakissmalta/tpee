@@ -1,7 +1,6 @@
 package request
 
 import (
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -75,12 +74,12 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check SESSION var match
 	if len(match_session) > 0 {
-		log.Println(match_session)
+		// log.Println(match_session)
 		var out string = *in
 		var sess *sessionstore.Session
 
 		for _, mtch := range match_session {
-			log.Println(r_ss.SubexpNames())
+			// log.Println(r_ss.SubexpNames())
 			for i, name := range r_ss.SubexpNames() {
 				if i > 0 && i <= len(match_session) {
 					if name == "SESSIONVAR" {
@@ -103,7 +102,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			for _, c := range sess.ID.([]*http.Cookie) {
 				if sessionvar_name == c.Name {
 					env_var_replace_string = c.Value
-					break
 				}
 			}
 
@@ -111,7 +109,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				out = strings.Replace(out, env_var_to_replace, env_var_replace_string.(string), -1)
 			}
 		}
-		log.Println(out)
 		ss.SessionIn <- sess
 		return out, nil
 	}
