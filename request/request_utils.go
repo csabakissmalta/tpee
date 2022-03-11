@@ -101,13 +101,10 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 
 			for _, c := range sess.ID.([]*http.Cookie) {
-				log.Println(c.Name)
-				log.Println(c.Value)
-				log.Println(sessionvar_name)
 				if sessionvar_name == c.Name {
 					env_var_replace_string = c.Value
+					break
 				}
-				log.Println("---")
 			}
 
 			out = strings.Replace(out, env_var_to_replace, env_var_replace_string.(string), -1)
