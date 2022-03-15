@@ -1,7 +1,6 @@
 package request
 
 import (
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -78,28 +77,21 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check SESSION var match
 	if len(match_session) > 0 {
-		// log.Println(match_session)
 		var out string = *in
 		var sess *sessionstore.Session
 
 		for _, mtch := range match_session {
 			for i, name := range r_ss.SubexpNames() {
-				// if i > 0 && i <= len(match_session) {
 				if name == "SESSIONVAR" {
 					sessionvar_name = mtch[i]
 				} else if name == "WHOLE" {
 					env_var_to_replace = mtch[i]
 				}
-				// }
 			}
-
-			log.Println("sessionvar_name", sessionvar_name)
-			log.Println("env_var_to_replace", env_var_to_replace)
 
 			if sess == nil {
 				for {
 					sess = <-ss.SessionOut
-					log.Println("SESSION:", sess)
 					if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
 						break
 					}
@@ -107,8 +99,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 
 			for _, c := range sess.ID.([]*http.Cookie) {
-				log.Println(c.Name)
-				log.Println(c.Value)
 				if sessionvar_name == c.Name {
 					env_var_replace_string = c.Value
 				}
@@ -116,7 +106,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 			if env_var_replace_string != "" {
 				out = strings.Replace(out, env_var_to_replace, env_var_replace_string, -1)
-				log.Println(out)
 			}
 		}
 		ss.SessionIn <- sess
