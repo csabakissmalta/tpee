@@ -1,6 +1,7 @@
 package request
 
 import (
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -107,8 +108,9 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 
-			if env_var_replace_string != nil {
+			if env_var_replace_string.(string) != "" {
 				out = strings.Replace(out, env_var_to_replace, env_var_replace_string.(string), -1)
+				log.Println(out)
 			}
 		}
 		ss.SessionIn <- sess
