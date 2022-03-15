@@ -47,6 +47,7 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 		encoded_data := body_urlencoded.Encode()
 		r_res, err := http.NewRequest(req_method, req_url, strings.NewReader(encoded_data))
 		if err != nil {
+			log.Printf("VAR ERROR: %s", err.Error())
 			return nil
 		}
 		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
@@ -60,6 +61,7 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 		}
 		r_res, err = http.NewRequest(req_method, req_url, bytes.NewBuffer([]byte(out)))
 		if err != nil {
+			log.Printf("VAR ERROR: %s", err.Error())
 			return nil
 		}
 	}
@@ -85,9 +87,10 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 		wtr.Close()
 		r_res, err := http.NewRequest(req_method, req_url, bytes.NewReader(body.Bytes()))
 		if err != nil {
+			log.Printf("VAR ERROR: %s", err.Error())
 			return nil
 		}
-		r_res.Header.Set("Content-Type", wtr.FormDataContentType())
+		r_res.Header.Add("Content-Type", wtr.FormDataContentType())
 	}
 
 	return r_res
