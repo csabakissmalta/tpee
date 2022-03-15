@@ -51,6 +51,7 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 			return nil
 		}
 		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
+		return r_res
 	}
 
 	// --- Body if Raw ---
@@ -64,6 +65,7 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 			log.Printf("VAR ERROR: %s", err.Error())
 			return nil
 		}
+		return r_res
 	}
 
 	// --- Body if Form ---
@@ -91,6 +93,13 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 			return nil
 		}
 		r_res.Header.Add("Content-Type", wtr.FormDataContentType())
+		return r_res
+	}
+
+	r_res, err := http.NewRequest(req_method, req_url, nil)
+	if err != nil {
+		log.Printf("VAR ERROR: %s", err.Error())
+		return nil
 	}
 
 	return r_res
@@ -110,18 +119,6 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// create body
 	var r_res *http.Request = createBody(p, req_method, req_url, fds, ds, ss)
-
-	// --- Headers ---
-	for _, hdr := range p.Header {
-		out, err := validate_and_substitute(&hdr.Value, r, rds, rss, fds, ds, ss)
-		if err != nil {
-			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
-		}
-		log.Println(r_res)
-		log.Println(hdr.Key)
-		log.Println(out)
-		r_res.Header.Add(hdr.Key, out)
-	}
 
 	if p.Auth.Type != "" {
 		switch p.Auth.Type {
