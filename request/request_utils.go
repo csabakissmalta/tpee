@@ -94,6 +94,8 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 
+			log.Println("SESSIONVAR:", sessionvar_name)
+
 			if sess == nil {
 				for {
 					sess = <-ss.SessionOut
@@ -104,7 +106,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 
 			for _, c := range sess.ID.([]*http.Cookie) {
-				log.Println(c.Name)
 				if sessionvar_name == c.Name {
 					log.Println(c.Value)
 					env_var_replace_string = c.Value
