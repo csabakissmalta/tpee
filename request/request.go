@@ -33,7 +33,20 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 
 // ---------------------------------------------------
 
-func createBody(p postman.Request, req_method string, req_url string, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (r_res *http.Request) {
+func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
+	var req_url string
+	var req_method string = p.Method
+	var r_res *http.Request
+	// body_urlencoded
+
+	// check the postman request
+	// --- URL.Raw ---
+	out, err := validate_and_substitute(&p.URL.Raw, r, rds, rss, fds, ds, ss)
+	if err != nil {
+		log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+	}
+	req_url = out
+
 	// --- Body if Urlencoded ---
 	if len(p.Body.Urlencoded) > 0 {
 		body_urlencoded := url.Values{}
@@ -45,31 +58,21 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 			body_urlencoded.Set(b.Key, out)
 		}
 		encoded_data := body_urlencoded.Encode()
-		r_res, err := http.NewRequest(req_method, req_url, strings.NewReader(encoded_data))
+		r_res, err = http.NewRequest(req_method, req_url, strings.NewReader(encoded_data))
 		if err != nil {
-			log.Printf("VAR ERROR: %s", err.Error())
-			return nil
+			return nil, err
 		}
 		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
-		return r_res
-	}
-
-	// --- Body if Raw ---
-	if len(p.Body.Raw) > 0 {
+	} else if len(p.Body.Raw) > 0 {
 		out, err := validate_and_substitute(&p.Body.Raw, r, rds, rss, fds, ds, ss)
 		if err != nil {
 			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 		}
 		r_res, err = http.NewRequest(req_method, req_url, bytes.NewBuffer([]byte(out)))
 		if err != nil {
-			log.Printf("VAR ERROR: %s", err.Error())
-			return nil
+			return nil, err
 		}
-		return r_res
-	}
-
-	// --- Body if Form ---
-	if len(p.Body.Formdata) > 0 {
+	} else if len(p.Body.Formdata) > 0 {
 		var body bytes.Buffer
 		wtr := multipart.NewWriter(&body)
 		for _, fd := range p.Body.Formdata {
@@ -87,38 +90,27 @@ func createBody(p postman.Request, req_method string, req_url string, fds []*tim
 			}
 		}
 		wtr.Close()
-		r_res, err := http.NewRequest(req_method, req_url, bytes.NewReader(body.Bytes()))
+		r_res, err = http.NewRequest(req_method, req_url, bytes.NewReader(body.Bytes()))
 		if err != nil {
-			log.Printf("VAR ERROR: %s", err.Error())
-			return nil
+			return nil, err
 		}
-		r_res.Header.Add("Content-Type", wtr.FormDataContentType())
-		return r_res
+		r_res.Header.Set("Content-Type", wtr.FormDataContentType())
+	} else {
+		r_res, err = http.NewRequest(req_method, req_url, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	r_res, err := http.NewRequest(req_method, req_url, nil)
-	if err != nil {
-		log.Printf("VAR ERROR: %s", err.Error())
-		return nil
+	// --- Headers ---
+	for _, hdr := range p.Header {
+		out, err := validate_and_substitute(&hdr.Value, r, rds, rss, fds, ds, ss)
+		if err != nil {
+			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+		}
+		// log.Println(out)
+		r_res.Header.Add(hdr.Key, out)
 	}
-
-	return r_res
-}
-
-func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
-	var req_url string
-	var req_method string = p.Method
-
-	// check the postman request
-	// --- URL.Raw ---
-	out, err := validate_and_substitute(&p.URL.Raw, r, rds, rss, fds, ds, ss)
-	if err != nil {
-		log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
-	}
-	req_url = out
-
-	// create body
-	var r_res *http.Request = createBody(p, req_method, req_url, fds, ds, ss)
 
 	if p.Auth.Type != "" {
 		switch p.Auth.Type {
