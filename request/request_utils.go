@@ -1,7 +1,6 @@
 package request
 
 import (
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -103,8 +102,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 
 			for _, c := range sess.ID.([]*http.Cookie) {
-				log.Println(c.Name)
-				log.Println(c.Value)
 				if sessionvar_name == c.Name {
 					env_var_replace_string = c.Value
 				}
