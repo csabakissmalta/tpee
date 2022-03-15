@@ -8,6 +8,18 @@ type Session struct {
 
 	// created time - should be invalidated when expires
 	Created time.Time
+
+	// metadata - any kind of data, which can be attached to the session and passed along with it
+	Meta *Meta
+}
+
+// meta type - which should instruct and hold any additional session data
+type Meta struct {
+	// data
+	Data interface{}
+
+	// instruction
+	Instruction string
 }
 
 // option type
@@ -17,6 +29,13 @@ type SessionOption func(*Session)
 func WithTimeCreatedNow() SessionOption {
 	return func(s *Session) {
 		s.Created = time.Now()
+	}
+}
+
+// with metadata
+func WithMetaData(m *Meta) SessionOption {
+	return func(s *Session) {
+		s.Meta = m
 	}
 }
 

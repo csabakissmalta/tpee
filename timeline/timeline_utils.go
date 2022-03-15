@@ -33,7 +33,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	f_extension := strings.Split(f_name, ".")[1]
 	switch f_extension {
 	case "csv":
-		var rec_index int
+		// var rec_index int
 		file, err := os.Open(f_name)
 		if err != nil {
 			log.Fatalf("DATA READ ERROR: cannot open feed file %s. %s", f_name, err.Error())
@@ -44,12 +44,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 			log.Fatalf("DATA READ ERROR: cannot read file %s. %s", f_name, err.Error())
 		}
 		csv_header := rec[0]
-		for idx, hkey := range csv_header {
-			if hkey == e.Key {
-				rec_index = idx
-				break
-			}
-		}
+
 		// shuffle the feed records - they tend to be ordered in some way
 		rec = rec[1:]
 		rand.Seed(time.Now().UnixNano())
@@ -58,7 +53,11 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 		})
 
 		for i := 0; i < dim; i++ {
-			f.Value <- rec[i][rec_index]
+			d := make(map[string]string)
+			for idx, hkey := range csv_header {
+				d[hkey] = rec[i][idx]
+			}
+			f.Value <- d
 		}
 	case "json":
 	case "txt":

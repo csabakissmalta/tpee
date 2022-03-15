@@ -78,7 +78,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		if res.StatusCode < 400 {
 			if extract_session {
 				go func() {
-					e := ss.ExtractClientSessionFromResponse(res)
+					e := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
 					if e != nil {
 						log.Printf("ERROR: %s", e.Error())
 					}
