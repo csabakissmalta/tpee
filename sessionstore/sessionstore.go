@@ -2,6 +2,7 @@ package sessionstore
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -70,6 +71,7 @@ func (s *Store) Start() {
 // Extracts client session from an http resonse
 // the extracted session is set and pushed to the in channel of the sessionstore
 func (s *Store) ExtractClientSessionFromResponse(resp *http.Response, req *http.Request, met *Meta) error {
+	log.Println(resp.Cookies())
 	if len(resp.Cookies()) > 0 {
 		s.SessionIn <- NewSession(
 			// The session id represented by the cookies
