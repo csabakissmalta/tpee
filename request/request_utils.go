@@ -83,9 +83,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		var sess *sessionstore.Session
 
 		for _, mtch := range match_session {
-			// log.Println(r_ss.SubexpNames())
 			for i, name := range r_ss.SubexpNames() {
-				log.Println("MATCH:", mtch[i])
 				if i > 0 && i <= len(match_session) {
 					if name == "SESSIONVAR" {
 						sessionvar_name = mtch[i]
@@ -95,9 +93,13 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 
+			log.Println("sessionvar_name", sessionvar_name)
+			log.Println("env_var_to_replace", env_var_to_replace)
+
 			if sess == nil {
 				for {
 					sess = <-ss.SessionOut
+					log.Println("SESSION:", sess)
 					if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
 						break
 					}
@@ -105,8 +107,9 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 
 			for _, c := range sess.ID.([]*http.Cookie) {
+				log.Println(c.Name)
+				log.Println(c.Value)
 				if sessionvar_name == c.Name {
-					log.Println(c.Value)
 					env_var_replace_string = c.Value
 				}
 			}
