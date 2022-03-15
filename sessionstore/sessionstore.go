@@ -79,7 +79,7 @@ func (s *Store) ExtractClientSessionFromResponse(resp *http.Response, req *http.
 			WithTimeCreatedNow(),
 
 			// with metadata
-			WithMetaData(met),
+			// WithMetaData(met),
 		)
 		return nil
 	} else {
