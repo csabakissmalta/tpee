@@ -175,6 +175,10 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 	engine_ticker := *time.NewTicker(time.Duration(tl.StepDuration * int(time.Nanosecond)))
 	done := make(chan bool)
 
+	if tl.Rules.DelaySeconds > 0 {
+		time.Sleep(time.Duration(tl.Rules.DelaySeconds * int(time.Second)))
+	}
+
 	// Start the timer
 	go func() {
 		for {
