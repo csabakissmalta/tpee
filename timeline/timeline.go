@@ -19,6 +19,12 @@ type Timeline struct {
 	// A channel of tasks, which will be executed at some point in time.
 	Tasks chan *task.Task
 
+	// rampup calls count
+	RamUpCallsCount int
+
+	// rampup tasks
+	RampupTasks chan *task.Task
+
 	// Request blueprint
 	RequestBlueprint *postman.Request
 
@@ -55,6 +61,12 @@ func WithHTTPClient(c *http.Client) Option {
 func WithName(n string) Option {
 	return func(t *Timeline) {
 		t.Name = n
+	}
+}
+
+func WithRampup(rmp chan *task.Task) Option {
+	return func(t *Timeline) {
+		t.RampupTasks = rmp
 	}
 }
 

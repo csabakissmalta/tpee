@@ -149,16 +149,26 @@ func (c *Coil) validateTimelineData(tl *timeline.Timeline) {
 func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// The Coil needs to control timelines in a separate routines
 	go func() {
-		tl.CurrectTask = <-tl.Tasks
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
 			time.Sleep(time.Duration(tl.CurrectTask.PlannedExecTimeNanos * int(time.Nanosecond)))
 		}
+
+		select {
+		case tl.CurrectTask = <-tl.RampupTasks:
+		case tl.CurrectTask = <-tl.Tasks:
+		}
+
 		// compose/execute task here
 		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
 
+		var next *task.Task
+
 		for {
-			next := <-tl.Tasks
+			select {
+			case next = <-tl.RampupTasks:
+			case next = <-tl.Tasks:
+			}
 			dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
 			time.Sleep(time.Duration(dorm_period))
 
@@ -179,6 +189,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 		time.Sleep(time.Duration(tl.Rules.DelaySeconds * int(time.Second)))
 	}
 
+	var next *task.Task
+
 	// Start the timer
 	go func() {
 		for {
@@ -186,7 +198,10 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			case <-done:
 				return
 			case <-engine_ticker.C:
-				next := <-tl.Tasks
+				select {
+				case next = <-tl.RampupTasks:
+				case next = <-tl.Tasks:
+				}
 				// compose/execute task here
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)

@@ -35,6 +35,9 @@ type Task struct {
 
 	// Task label for reporting
 	TaskLabel string
+
+	// rampup flag
+	IsRampup bool
 }
 
 type Option func(*Task)
