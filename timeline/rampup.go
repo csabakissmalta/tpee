@@ -8,11 +8,11 @@ import (
 	task "github.com/csabakissmalta/tpee/task"
 )
 
-type Rampup int64
+type Rampup string
 
 const (
-	LINEAR Rampup = iota
-	SINUSOIDAL
+	LINEAR     Rampup = "linear"
+	SINUSOIDAL Rampup = "sinusoidal"
 )
 
 const (
