@@ -16,7 +16,7 @@ const (
 )
 
 const (
-	L = 20.0 // do not change this, unless multiple rampup types, but then create a corresponding const/value to each type
+	L = 50.0 // do not change this, unless multiple rampup types, but then create a corresponding const/value to each type
 )
 
 var (
@@ -46,9 +46,9 @@ func calc_val(x float64, tp Rampup) (pt_val float64) {
 }
 
 func generate_intervals(t Rampup, dur int) (result []float64, count int) {
-	stepper := float64(0.1/multiplier) * 2
+	stepper := float64(0.1 / multiplier)
 	rpss := []float64{}
-	for x := 0.0; x < L*multiplier; x += 1.0 {
+	for x := 0.0; x < float64(dur)*multiplier; x += 1.0 {
 		curr := calc_val(x*stepper, t)
 		rpss = append(rpss, curr)
 	}
