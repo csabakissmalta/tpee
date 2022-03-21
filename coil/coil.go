@@ -169,7 +169,8 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 			select {
 			case next = <-tl.RampupTasks:
 				after_rmpup_ts = tl.CurrectTask.PlannedExecTimeNanos
-			case next = <-tl.Tasks:
+			default:
+				next = <-tl.Tasks
 			}
 			dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos + after_rmpup_ts) * int(time.Nanosecond)
 			time.Sleep(time.Duration(dorm_period))
