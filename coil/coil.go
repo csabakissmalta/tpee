@@ -213,12 +213,13 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
 				tl.CurrectTask = next
-			case next = <-tl.Tasks:
+			default:
 				select {
 				case <-done:
 					return
 				case <-engine_ticker.C:
 					// compose/execute task here
+					next = <-tl.Tasks
 					request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
 					tl.CurrectTask = next
