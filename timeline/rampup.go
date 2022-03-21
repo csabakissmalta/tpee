@@ -69,24 +69,18 @@ func generate_intervals(t Rampup) (result []float64, count int) {
 // with negative timestamps to be executed before the main timeline
 // should take:
 // time length and the rate of what the plan supposed to reach and the generator function.
-func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float64, t Rampup) (rampupPts []*task.Task) {
-	if targetRPS < 5 {
-		return []*task.Task{}
-	}
+func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float64, t Rampup, label string) (rampupPts []*task.Task) {
 	initPoints, c := PointsPlannedTimestamps(targetRPS, t)
 	second := float64(time.Second)
 	tl.RamUpCallsCount = c
 
 	for _, p := range initPoints {
 		t := ((p + delay) * second) / float64(time.Nanosecond)
-		// log.Println(t)
-		// if delay > 0 {
-		// 	log.Println(t)
-		// }
-		rampupPts = append(rampupPts, &task.Task{
-			PlannedExecTimeNanos: int(t),
-			IsRampup:             true,
-		})
+		rampupPts = append(rampupPts, task.New(
+			task.WithPlannedExecTimeNanos(int(t)),
+			task.WithLabel(label),
+		))
+
 	}
 	return rampupPts
 }

@@ -85,11 +85,12 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 	// populate rampup period if set
 	if rmp != nil {
-		rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType))
+		rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
 		t.RampupTasks = make(chan *task.Task, len(rmp_points))
 		for _, p := range rmp_points {
 			t.RampupTasks <- p
 		}
+		timeline_dimension += len(t.RampupTasks)
 	}
 
 	// The step between the markers
