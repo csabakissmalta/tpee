@@ -49,10 +49,10 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
 }
 
 func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count int) {
-	stepper := float64(0.1/multiplier) * 2
+	// stepper := float64(0.1/multiplier) * 2
 	rpss := []float64{}
 	for x := 0.0; x < float64(dur); x += 1.0 {
-		curr := calc_val(x*stepper, t, dur, maxrps)
+		curr := calc_val(x, t, dur, maxrps)
 		rpss = append(rpss, curr)
 	}
 	sort.Float64s(rpss)
