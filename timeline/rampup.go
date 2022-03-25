@@ -33,11 +33,14 @@ func GetRampupDuration() (dur float64) {
 	return dur
 }
 
-func calc_val(x float64, tp Rampup) (pt_val float64) {
+// y\ =\ \frac{A}{2}\left(\cos\left(\frac{\pi x}{b}\ -\ \pi\right)+1\right)
+
+func calc_val(x float64, tp Rampup, dur int) (pt_val float64) {
 	// sinusoidal increase
 	switch tp {
 	case SINUSOIDAL:
-		pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
+		pt_val = A / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
+		// pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
 	case LINEAR:
 		pt_val = A * x
 	}
@@ -48,8 +51,8 @@ func calc_val(x float64, tp Rampup) (pt_val float64) {
 func generate_intervals(t Rampup, dur int) (result []float64, count int) {
 	stepper := float64(0.1/multiplier) * 2
 	rpss := []float64{}
-	for x := 0.0; x < L*multiplier; x += 1.0 {
-		curr := calc_val(x*stepper, t)
+	for x := 0.0; x < float64(dur); x += 1.0 {
+		curr := calc_val(x*stepper, t, dur)
 		rpss = append(rpss, curr)
 	}
 	sort.Float64s(rpss)
