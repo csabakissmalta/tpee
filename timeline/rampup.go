@@ -35,11 +35,11 @@ func GetRampupDuration() (dur float64) {
 
 // y\ =\ \frac{A}{2}\left(\cos\left(\frac{\pi x}{b}\ -\ \pi\right)+1\right)
 
-func calc_val(x float64, tp Rampup, dur int) (pt_val float64) {
+func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
 	// sinusoidal increase
 	switch tp {
 	case SINUSOIDAL:
-		pt_val = A / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
+		pt_val = float64(maxrps) / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
 		// pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
 	case LINEAR:
 		pt_val = A * x
@@ -48,11 +48,11 @@ func calc_val(x float64, tp Rampup, dur int) (pt_val float64) {
 	return pt_val
 }
 
-func generate_intervals(t Rampup, dur int) (result []float64, count int) {
+func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count int) {
 	stepper := float64(0.1/multiplier) * 2
 	rpss := []float64{}
 	for x := 0.0; x < float64(dur); x += 1.0 {
-		curr := calc_val(x*stepper, t, dur)
+		curr := calc_val(x*stepper, t, dur, maxrps)
 		rpss = append(rpss, curr)
 	}
 	sort.Float64s(rpss)
@@ -90,7 +90,6 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 
 // The function, returning the values
 func PointsPlannedTimestamps(maxRps int64, t Rampup, dur int) (pts []float64, count int) {
-	A = float64(maxRps)
-	pts, count = generate_intervals(t, dur)
+	pts, count = generate_intervals(t, dur, int(maxRps))
 	return pts, count
 }
