@@ -20,18 +20,8 @@ const (
 )
 
 var (
-	multiplier float64 = 4.0  // multiplies L and gets as much seconds duration for the rampup
-	A          float64 = 20.0 // amplitude - the target rps
+	A float64 = 20.0 // amplitude - the target rps
 )
-
-func AdjustMultiplier(total float64) {
-	multiplier = total / L
-}
-
-func GetRampupDuration() (dur float64) {
-	dur = L * multiplier
-	return dur
-}
 
 // y\ =\ \frac{A}{2}\left(\cos\left(\frac{\pi x}{b}\ -\ \pi\right)+1\right)
 
@@ -44,12 +34,10 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
 	case LINEAR:
 		pt_val = A * x
 	}
-
 	return pt_val
 }
 
 func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count int) {
-	// stepper := float64(0.1/multiplier) * 2
 	rpss := []float64{}
 	for x := 0.0; x < float64(dur); x += 1.0 {
 		curr := calc_val(x, t, dur, maxrps)
