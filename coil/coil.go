@@ -149,17 +149,30 @@ func (c *Coil) validateTimelineData(tl *timeline.Timeline) {
 func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// The Coil needs to control timelines in a separate routines
 	go func() {
-		tl.CurrectTask = <-tl.Tasks
+		var after_rmpup_ts int = 0
 		if tl.CurrectTask.PlannedExecTimeNanos > 0 {
 			time.Sleep(time.Duration(tl.CurrectTask.PlannedExecTimeNanos * int(time.Nanosecond)))
 		}
+
+		select {
+		case tl.CurrectTask = <-tl.RampupTasks:
+		case tl.CurrectTask = <-tl.Tasks:
+		}
+
 		// compose/execute task here
 		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
 
+		var next *task.Task
+
 		for {
-			next := <-tl.Tasks
-			dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
+			select {
+			case next = <-tl.RampupTasks:
+				after_rmpup_ts = tl.CurrectTask.PlannedExecTimeNanos
+			default:
+				next = <-tl.Tasks
+			}
+			dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos + after_rmpup_ts) * int(time.Nanosecond)
 			time.Sleep(time.Duration(dorm_period))
 
 			// compose/execute task here
@@ -179,18 +192,41 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 		time.Sleep(time.Duration(tl.Rules.DelaySeconds * int(time.Second)))
 	}
 
+	var next *task.Task
+
 	// Start the timer
 	go func() {
+		if len(tl.RampupTasks) > 0 {
+			tl.CurrectTask = <-tl.RampupTasks
+			// compose/execute task here
+			request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+			tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
+		}
+
 		for {
 			select {
-			case <-done:
-				return
-			case <-engine_ticker.C:
-				next := <-tl.Tasks
+			case next = <-tl.RampupTasks:
+				// if there is rampup, it falls back to compare mode
+				dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
+				time.Sleep(time.Duration(dorm_period))
+
 				// compose/execute task here
 				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
+				tl.CurrectTask = next
+			default:
+				select {
+				case <-done:
+					return
+				case <-engine_ticker.C:
+					// compose/execute task here
+					next = <-tl.Tasks
+					request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore)
+					tl.CurrectTask = next
+				}
 			}
+
 		}
 	}()
 }

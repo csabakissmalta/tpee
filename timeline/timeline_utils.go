@@ -52,12 +52,19 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 			rec[i], rec[j] = rec[j], rec[i]
 		})
 
-		for i := 0; i < dim; i++ {
+		var i int = 0
+		for {
 			d := make(map[string]string)
 			for idx, hkey := range csv_header {
 				d[hkey] = rec[i][idx]
 			}
 			f.Value <- d
+			i++
+			if i == dim {
+				break
+			} else if i == len(rec) {
+				i = 0
+			}
 		}
 	case "json":
 	case "txt":

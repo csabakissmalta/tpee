@@ -19,6 +19,12 @@ type Timeline struct {
 	// A channel of tasks, which will be executed at some point in time.
 	Tasks chan *task.Task
 
+	// rampup calls count
+	RamUpCallsCount int
+
+	// rampup tasks
+	RampupTasks chan *task.Task
+
 	// Request blueprint
 	RequestBlueprint *postman.Request
 
@@ -58,6 +64,12 @@ func WithName(n string) Option {
 	}
 }
 
+func WithRampup(rmp chan *task.Task) Option {
+	return func(t *Timeline) {
+		t.RampupTasks = rmp
+	}
+}
+
 func New(option ...Option) *Timeline {
 	tl := &Timeline{}
 	for _, o := range option {
@@ -66,9 +78,18 @@ func New(option ...Option) *Timeline {
 	return tl
 }
 
-func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem) {
+func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup) {
+	// populate rampup period if set
+	if rmp != nil {
+		rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
+		t.RampupTasks = make(chan *task.Task, len(rmp_points))
+		for _, p := range rmp_points {
+			t.RampupTasks <- p
+		}
+	}
+
 	// check env elements and load feeds if there is any feedValue type
-	timeline_dimension := (dur - t.Rules.DelaySeconds) * t.Rules.Frequency
+	timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks)
 	t.Feeds = load_feeds_if_required(timeline_dimension, env)
 
 	// The step between the markers

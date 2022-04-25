@@ -207,6 +207,15 @@ func (j *ExecHdrHistogramSettings) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Period, which starts at 0 and reaches the timelines traffic level.
+type ExecRampup struct {
+	// Rampup period duration.
+	DurationSeconds *int `json:"duration-seconds,omitempty"`
+
+	// RampupType corresponds to the JSON schema field "rampup-type".
+	RampupType *string `json:"rampup-type,omitempty"`
+}
+
 // Perforamnce test execution configuration schema
 type Exec struct {
 	// Test duration in seconds
@@ -217,6 +226,9 @@ type Exec struct {
 
 	// Optional settings for influxdb reporting.
 	InfluxdbSettings *ExecInfluxdbSettings `json:"influxdb-settings,omitempty"`
+
+	// Period, which starts at 0 and reaches the timelines traffic level.
+	Rampup *ExecRampup `json:"rampup,omitempty"`
 
 	// The HDR Histogram output settings.
 	HdrHistogramSettings *ExecHdrHistogramSettings `json:"hdr-histogram-settings,omitempty"`
