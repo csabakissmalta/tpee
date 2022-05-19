@@ -134,10 +134,14 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 			// to make it more precise here
 			// log.Println("ERROR: Extraction from", rule.Target, "is not implmented yet")
 			mems := strings.Split(rule.ContentType, "§")
+			log.Println(mems)
 			ctype := resp.Header.Get(mems[0])
+			log.Println(ctype)
 			if len(mems) > 1 {
 				regex_ptr := mems[1]
+				log.Println(mems[1])
 				matchmap := RegexpIt(regex_ptr, ctype)
+				log.Println(matchmap)
 				for key, val := range matchmap {
 					if key == mems[0] {
 						to_push := val
