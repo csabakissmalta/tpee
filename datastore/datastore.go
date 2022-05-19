@@ -134,18 +134,12 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 			// to make it more precise here
 			// log.Println("ERROR: Extraction from", rule.Target, "is not implmented yet")
 			mems := strings.Split(rule.ContentType, "§")
-			log.Println(":Splitted target:", mems)
-			log.Println(":Response headers:", resp.Header)
-			log.Println(":Header name:", mems[0])
 			ctype := resp.Header.Get(mems[0])
-			log.Println(":Header value:", ctype)
 			if len(mems) > 1 {
 				regex_ptr := mems[1]
-				log.Println(mems[1])
 				matchmap := RegexpIt(regex_ptr, ctype)
-				log.Println(matchmap)
 				for key, val := range matchmap {
-					if key == mems[0] {
+					if key == *rule.Name {
 						to_push := val
 						log.Printf("tpee: %s", val)
 						PushDataIn(&InUnsorted{
