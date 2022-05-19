@@ -130,6 +130,9 @@ type ExecRequestsElem struct {
 	// Delayed execution wait time before start - in seconds.
 	DelaySeconds int `json:"delay-seconds"`
 
+	// Set the client to follow the redirects or not.
+	FollowRedirects bool `json:"follow-redirects,omitempty"`
+
 	// Per second execution rate.
 	Frequency int `json:"frequency"`
 
@@ -171,6 +174,9 @@ func (j *ExecRequestsElem) UnmarshalJSON(b []byte) error {
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
+	}
+	if v, ok := raw["follow-redirects"]; !ok || v == nil {
+		plain.FollowRedirects = true
 	}
 	*j = ExecRequestsElem(plain)
 	return nil
