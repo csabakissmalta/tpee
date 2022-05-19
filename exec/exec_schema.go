@@ -97,6 +97,9 @@ type ExecRequestsElemDataPersistenceDataOutElem struct {
 
 	// Target corresponds to the JSON schema field "target".
 	Target interface{} `json:"target"`
+
+	// Whether the objects need to be disposed after usage.
+	Retention bool `json:"retention,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -115,6 +118,9 @@ func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) err
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
+	}
+	if v, ok := raw["retention"]; !ok || v == nil {
+		plain.Retention = false
 	}
 	*j = ExecRequestsElemDataPersistenceDataOutElem(plain)
 	return nil
