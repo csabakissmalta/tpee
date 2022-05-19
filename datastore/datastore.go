@@ -28,6 +28,9 @@ type Data struct {
 
 	// The data channel
 	Queue chan interface{}
+
+	// Retetntion policy
+	Retention bool
 }
 
 // Data coming in needs to be sorted and controlled based on key
@@ -37,6 +40,9 @@ type InUnsorted struct {
 
 	// Data
 	In interface{}
+
+	// Retention policy
+	Retetntion bool
 }
 
 // Datastore controller
@@ -124,8 +130,9 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 				to_push := extractFromJSONBody(body, *rule.Name)
 
 				PushDataIn(&InUnsorted{
-					Name: *rule.Name,
-					In:   to_push,
+					Name:       *rule.Name,
+					In:         to_push,
+					Retetntion: rule.Retention,
 				})
 			default:
 				log.Println(ctype)
@@ -143,8 +150,9 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 						to_push := val
 						log.Printf("tpee: %s", val)
 						PushDataIn(&InUnsorted{
-							Name: *rule.Name,
-							In:   to_push,
+							Name:       *rule.Name,
+							In:         to_push,
+							Retetntion: rule.Retention,
 						})
 					}
 				}

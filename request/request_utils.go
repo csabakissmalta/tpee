@@ -62,8 +62,10 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 		}
+		var ret bool = true
 		for _, chans := range ds.DataOut {
 			if feed_varname == chans.Name {
+				ret = chans.Retention
 				ch = chans.Queue
 				break
 			}
@@ -71,7 +73,11 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		elem := <-ch
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
-		ch <- env_var_replace_string
+
+		if ret {
+			ch <- env_var_replace_string
+		}
+
 		return out, nil
 	}
 
