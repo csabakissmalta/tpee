@@ -141,6 +141,7 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 				for key, val := range matchmap {
 					if key == mems[0] {
 						to_push := val
+						log.Printf("tpee: %s", val)
 						PushDataIn(&InUnsorted{
 							Name: *rule.Name,
 							In:   to_push,
