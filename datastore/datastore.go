@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	execconfig "github.com/csabakissmalta/tpee/exec"
@@ -131,9 +132,36 @@ func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecR
 			}
 		} else if rule.Target == EXTR_TARGET_HEADER {
 			// to make it more precise here
-			log.Println("ERROR: Extraction from", rule.Target, "is not implmented yet")
+			// log.Println("ERROR: Extraction from", rule.Target, "is not implmented yet")
+			mems := strings.Split(rule.ContentType, "§")
+			ctype := resp.Header.Get(mems[0])
+			if len(mems) > 1 {
+				regex_ptr := mems[1]
+				matchmap := RegexpIt(regex_ptr, ctype)
+				for key, val := range matchmap {
+					if key == mems[0] {
+						to_push := val
+						PushDataIn(&InUnsorted{
+							Name: *rule.Name,
+							In:   to_push,
+						})
+					}
+				}
+			}
 		}
 	}
+}
+
+func RegexpIt(regEx, src string) (rgxmap map[string]string) {
+	var compRegEx = regexp.MustCompile(regEx)
+	match := compRegEx.FindAllStringSubmatch(src, -1)
+	rgxmap = make(map[string]string)
+	for i := range compRegEx.SubexpNames() {
+		if i < len(match) {
+			rgxmap[match[i][2]] = match[i][3]
+		}
+	}
+	return rgxmap
 }
 
 func extractFromJSONBody(b []byte, key string) string {
