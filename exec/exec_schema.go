@@ -98,6 +98,9 @@ type ExecRequestsElemDataPersistenceDataOutElem struct {
 	// Target corresponds to the JSON schema field "target".
 	Target interface{} `json:"target"`
 
+	// Storage corresponds to the JSON schema field "storage".
+	Storage interface{} `json:"storage,omitempty"`
+
 	// Whether the objects need to be disposed after usage.
 	Retention bool `json:"retention,omitempty"`
 }
@@ -110,6 +113,12 @@ func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) err
 	}
 	if v, ok := raw["content-type"]; !ok || v == nil {
 		return fmt.Errorf("field content-type: required")
+	}
+	if v, ok := raw["name"]; !ok || v == nil {
+		return fmt.Errorf("field name: required")
+	}
+	if v, ok := raw["storage"]; !ok || v == nil {
+		return fmt.Errorf("field storage: required")
 	}
 	if v, ok := raw["target"]; !ok || v == nil {
 		return fmt.Errorf("field target: required")

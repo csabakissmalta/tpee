@@ -16,7 +16,7 @@ type Session struct {
 // meta type - which should instruct and hold any additional session data
 type Meta struct {
 	// data
-	Data interface{}
+	Data map[string]interface{}
 
 	// instruction
 	Instruction string

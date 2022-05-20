@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"time"
+
+	"github.com/csabakissmalta/tpee/exec"
 )
 
 // This package is to store and provide session data for requests.
@@ -86,4 +88,23 @@ func (s *Store) ExtractClientSessionFromResponse(resp *http.Response, req *http.
 	} else {
 		return errors.New("could not extract session from response")
 	}
+}
+
+// GetSessionMeta is the method to retrieve the Meta object
+func (sess *Session) GetSessionMeta() *Meta {
+	return sess.Meta
+}
+
+// store.Store interface impl for the session
+func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElemDataPersistenceDataOutElem) {
+	meta := sess.GetSessionMeta()
+	if meta.Data == nil {
+		meta.Data = make(map[string]interface{})
+	}
+	meta.Data[*rule.Name] = extracted
+}
+
+// store.Store interface impl for the session
+func (sess *Session) RetrieveData(name string) interface{} {
+	return nil
 }

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	datastore "github.com/csabakissmalta/tpee/datastore"
+	data "github.com/csabakissmalta/tpee/data"
 	execconfig "github.com/csabakissmalta/tpee/exec"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 )
@@ -88,7 +88,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 				}()
 			}
 			if len(extract_rules) > 0 {
-				go datastore.ExtractDataFromResponse(res, extract_rules)
+				go data.ExtractDataFromResponse(res, extract_rules)
 			}
 		}
 		ts.Executed = true
