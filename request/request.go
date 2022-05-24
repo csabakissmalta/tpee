@@ -167,6 +167,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	}
 
 	task.WithRequest(r_res)(t)
+	if sess != nil {
+		ss.SessionIn <- sess
+	}
 
 	return t, nil
 }
