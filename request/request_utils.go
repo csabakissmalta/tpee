@@ -86,6 +86,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			// do nothing
 		}
 
+		log.Println("*** DATASTORE_IN:", datasource_in)
 		log.Println("*** ELEM:", elem)
 
 		env_var_replace_string = elem.(string)
