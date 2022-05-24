@@ -160,8 +160,8 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 		}
 
 		// compose/execute task here
-		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
-		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
+		_, ses, _ := request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
+		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 
 		var next *task.Task
 
@@ -176,8 +176,8 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 			time.Sleep(time.Duration(dorm_period))
 
 			// compose/execute task here
-			request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
-			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
+			_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
+			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 			tl.CurrectTask = next
 		}
 	}()
@@ -199,8 +199,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 		if len(tl.RampupTasks) > 0 {
 			tl.CurrectTask = <-tl.RampupTasks
 			// compose/execute task here
-			request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
-			tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
+			_, ses, _ := request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
+			tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 		}
 
 		for {
@@ -211,8 +211,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				time.Sleep(time.Duration(dorm_period))
 
 				// compose/execute task here
-				request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
-				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
+				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
+				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 				tl.CurrectTask = next
 			default:
 				select {
@@ -221,8 +221,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				case <-engine_ticker.C:
 					// compose/execute task here
 					next = <-tl.Tasks
-					request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
-					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
+					_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
+					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 					tl.CurrectTask = next
 				}
 			}

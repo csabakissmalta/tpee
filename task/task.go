@@ -84,7 +84,7 @@ func isSessionRequired(dp []*execconfig.ExecRequestsElemDataPersistenceDataInEle
 	return false
 }
 
-func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, data_in_rules []*execconfig.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconfig.ExecEnvironmentElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster) *Task {
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, data_in_rules []*execconfig.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconfig.ExecEnvironmentElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster, session_in *sessionstore.Session) *Task {
 
 	go func() {
 		ts.ExecutionTime = time.Now()
@@ -92,18 +92,18 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
-		var session *sessionstore.Session
-		if len(extract_rules) > 0 {
-			session_required := isSessionRequired(data_in_rules, envvars)
-			if session_required {
-				for {
-					session = <-ss.SessionOut
-					if time.Since(session.Created) < sessionstore.SESSION_VALIDITY {
-						break
-					}
-				}
-			}
-		}
+		// var session *sessionstore.Session
+		// if len(extract_rules) > 0 {
+		// 	session_required := isSessionRequired(data_in_rules, envvars)
+		// 	if session_required {
+		// 		for {
+		// 			session = <-ss.SessionOut
+		// 			if time.Since(session.Created) < sessionstore.SESSION_VALIDITY {
+		// 				break
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
@@ -126,7 +126,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 				case "data-store":
 					data.ExtractDataFromResponse(res, erule, ds)
 				case "session-meta":
-					data.ExtractDataFromResponse(res, erule, session)
+					data.ExtractDataFromResponse(res, erule, session_in)
 				default:
 					log.Printf("tpee: %s", "default")
 					// nothing happens

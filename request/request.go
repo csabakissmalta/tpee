@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
@@ -33,13 +34,31 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 
 // ---------------------------------------------------
 
-func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
+// does the request require session?
+func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) bool {
+	for _, d := range dp {
+		if d.Storage.(string) == "session-meta" {
+			return true
+		}
+	}
+	return false
+}
+
+func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, *sessionstore.Session, error) {
 	var req_url string
 	var req_method string = p.Method
 	var r_res *http.Request
 	var sess *sessionstore.Session
 	// body_urlencoded
-
+	session_required := isSessionRequired(dp)
+	if session_required {
+		for {
+			sess = <-ss.SessionOut
+			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
+				break
+			}
+		}
+	}
 	// get a session, if required, based on the data in props
 
 	// check the postman request
@@ -63,7 +82,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		encoded_data := body_urlencoded.Encode()
 		r_res, err = http.NewRequest(req_method, req_url, strings.NewReader(encoded_data))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
 	} else if len(p.Body.Raw) > 0 {
@@ -73,7 +92,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		}
 		r_res, err = http.NewRequest(req_method, req_url, bytes.NewBuffer([]byte(out)))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	} else if len(p.Body.Formdata) > 0 {
 		var body bytes.Buffer
@@ -95,13 +114,13 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		wtr.Close()
 		r_res, err = http.NewRequest(req_method, req_url, bytes.NewReader(body.Bytes()))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		r_res.Header.Set("Content-Type", wtr.FormDataContentType())
 	} else {
 		r_res, err = http.NewRequest(req_method, req_url, nil)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -152,5 +171,5 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		ss.SessionIn <- sess
 	}
 
-	return t, nil
+	return t, sess, nil
 }
