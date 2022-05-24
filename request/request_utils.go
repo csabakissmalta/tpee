@@ -72,7 +72,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 		}
-		var ret bool = true
+		// var ret bool = true
 
 		datasource_in := whichDataStore(feed_varname, dp)
 		var elem interface{}
