@@ -96,7 +96,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	}
 
 	// check SESSION var match
-	if len(match_session) > 0 {
+	if len(match_session) > 0 && ss != nil {
 		var out string = *in
 
 		for _, mtch := range match_session {
