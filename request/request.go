@@ -35,27 +35,22 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 // ---------------------------------------------------
 
 // does the request require session?
-func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconf.ExecEnvironmentElem) bool {
+func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, re *execconf.ExecRequestsElem) bool {
 	for _, d := range dp {
 		if d.Storage.(string) == "session-meta" {
 			return true
 		}
 	}
-	for _, e := range envvars {
-		if *e.Type == execconf.SESSION_VALUE {
-			return true
-		}
-	}
-	return false
+	return *re.UsesSession
 }
 
-func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, *sessionstore.Session, error) {
+func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, re *execconf.ExecRequestsElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, *sessionstore.Session, error) {
 	var req_url string
 	var req_method string = p.Method
 	var r_res *http.Request
 	var sess *sessionstore.Session
 	// body_urlencoded
-	session_required := isSessionRequired(dp, env)
+	session_required := isSessionRequired(dp, re)
 
 	log.Println("=============================================")
 	log.Println("IS SESSION REQUIRED?", session_required)

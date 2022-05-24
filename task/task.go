@@ -70,19 +70,6 @@ func New(option ...Option) *Task {
 }
 
 // util method does the request require session?
-func isSessionRequired(dp []*execconfig.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconfig.ExecEnvironmentElem) bool {
-	for _, d := range dp {
-		if d.Storage.(string) == "session-meta" {
-			return true
-		}
-	}
-	for _, e := range envvars {
-		if *e.Type == execconfig.SESSION_VALUE {
-			return true
-		}
-	}
-	return false
-}
 
 func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, data_in_rules []*execconfig.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconfig.ExecEnvironmentElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster, session_in *sessionstore.Session) *Task {
 

@@ -230,8 +230,11 @@ type ExecRampup struct {
 }
 
 type ExecRequestsElem struct {
-	// Definition for the request, whether creates or uses session
+	// Definition for the request, whether creates session
 	CreatesSession *bool `json:"creates-session,omitempty"`
+
+	// Definition for the request, whether uses session
+	UsesSession *bool `json:"uses-session,omitempty"`
 
 	// The wrapper to define sticky data dependency and generation properties.
 	DataPersistence *ExecRequestsElemDataPersistence `json:"data-persistence,omitempty"`
