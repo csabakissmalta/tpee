@@ -103,7 +103,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 
 				}
 
-				if len(extract_rules) > 0 {
+				if len(extract_rules) > 0 && session == nil {
 					session_required := isSessionRequired(data_in_rules)
 					if session_required {
 						for {
