@@ -65,7 +65,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		var ret bool = true
 
 		elem := ds.RetrieveData(feed_varname)
-		ret = elem.Retention
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
 

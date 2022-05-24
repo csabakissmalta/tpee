@@ -113,11 +113,13 @@ func (db *DataBroadcaster) SaveData(extracted interface{}, rule *exec.ExecReques
 // Store interafce impl
 func (db *DataBroadcaster) RetrieveData(name string) interface{} {
 	var ch chan interface{}
+	var out interface{}
 	for _, chans := range db.DataOut {
 		if name == chans.Name {
 			ch = chans.Queue
 			break
 		}
 	}
-	return <-ch
+	out = <-ch
+	return <-out.(Data).Queue
 }
