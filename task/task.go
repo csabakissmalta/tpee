@@ -87,13 +87,25 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
+		var session *sessionstore.Session
+		if len(extract_rules) > 0 {
+			session_required := isSessionRequired(data_in_rules)
+			if session_required {
+				for {
+					session = <-ss.SessionOut
+					if time.Since(session.Created) < sessionstore.SESSION_VALIDITY {
+						break
+					}
+				}
+			}
+		}
 
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
 		if res.StatusCode < 400 {
 
 			go func() {
-				var session *sessionstore.Session
+
 				if extract_session {
 					// meta := &sessionstore.Meta{}
 					session, err = ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
@@ -101,18 +113,6 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 						log.Printf("ERROR: %s", err.Error())
 					}
 
-				}
-
-				if len(extract_rules) > 0 && session == nil {
-					session_required := isSessionRequired(data_in_rules)
-					if session_required {
-						for {
-							session = <-ss.SessionOut
-							if time.Since(session.Created) < sessionstore.SESSION_VALIDITY {
-								break
-							}
-						}
-					}
 				}
 
 				for _, erule := range extract_rules {
