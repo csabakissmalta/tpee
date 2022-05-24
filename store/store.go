@@ -7,5 +7,5 @@ type Store interface {
 	SaveData(interface{}, *exec.ExecRequestsElemDataPersistenceDataOutElem)
 
 	// RetrieveData gets data from the storage
-	RetrieveData(string) interface{}
+	RetrieveData(string, bool) interface{}
 }

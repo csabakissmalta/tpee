@@ -22,6 +22,9 @@ func (j *ExecRequestsElemDataPersistenceDataInElem) UnmarshalJSON(b []byte) erro
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
 	}
+	if v, ok := raw["retention"]; !ok || v == nil {
+		plain.Retention = false
+	}
 	*j = ExecRequestsElemDataPersistenceDataInElem(plain)
 	return nil
 }
@@ -173,9 +176,6 @@ func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) err
 	if err := json.Unmarshal(b, &plain); err != nil {
 		return err
 	}
-	if v, ok := raw["retention"]; !ok || v == nil {
-		plain.Retention = false
-	}
 	*j = ExecRequestsElemDataPersistenceDataOutElem(plain)
 	return nil
 }
@@ -270,6 +270,9 @@ type ExecRequestsElemDataPersistenceDataInElem struct {
 
 	// Storage corresponds to the JSON schema field "storage".
 	Storage interface{} `json:"storage"`
+
+	// Whether the objects need to be disposed after usage.
+	Retention bool `json:"retention"`
 }
 
 // The precise definition for the implementation where to find the required value
@@ -280,9 +283,6 @@ type ExecRequestsElemDataPersistenceDataOutElem struct {
 
 	// The name of the property the value of is required
 	Name string `json:"name"`
-
-	// Whether the objects need to be disposed after usage.
-	Retention bool `json:"retention"`
 
 	// Storage corresponds to the JSON schema field "storage".
 	Storage interface{} `json:"storage"`

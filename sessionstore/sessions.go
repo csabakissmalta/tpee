@@ -71,6 +71,10 @@ func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElem
 }
 
 // store.Store interface impl for the session
-func (sess *Session) RetrieveData(name string) interface{} {
-	return sess.Meta.Data[name]
+func (sess *Session) RetrieveData(name string, retention bool) interface{} {
+	ret := sess.Meta.Data[name]
+	if !retention {
+		delete(sess.Meta.Data, name)
+	}
+	return ret
 }

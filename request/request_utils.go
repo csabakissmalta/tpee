@@ -17,13 +17,13 @@ import (
 // }
 
 // whichDataStore is a function to determine from where to retrieve the data
-func whichDataStore(name string, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) string {
+func whichDataStore(name string, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) (string, bool) {
 	for _, d := range dp {
 		if name == d.Name {
-			return d.Storage.(string)
+			return d.Storage.(string), d.Retention
 		}
 	}
-	return ""
+	return "", false
 }
 
 func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Session, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) (string, error) {
@@ -75,13 +75,16 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		}
 		// var ret bool = true
 
-		datasource_in := whichDataStore(feed_varname, dp)
+		datasource_in, retention := whichDataStore(feed_varname, dp)
 		var elem interface{}
 		switch datasource_in {
 		case "data-store":
-			elem = ds.RetrieveData(feed_varname)
+			elem = ds.RetrieveData(feed_varname, retention)
+			if retention {
+				ch <- env_var_replace_string
+			}
 		case "session-meta":
-			elem = ss.RetrieveData(feed_varname)
+			elem = ss.RetrieveData(feed_varname, retention)
 		default:
 			// do nothing
 		}
@@ -93,10 +96,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
-
-		// if ret {
-		// 	ch <- env_var_replace_string
-		// }
 
 		return out, nil
 	}

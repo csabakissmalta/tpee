@@ -104,14 +104,13 @@ func (db *DataBroadcaster) StartConsumingDataIn() {
 // Store interface impl
 func (db *DataBroadcaster) SaveData(extracted interface{}, rule *exec.ExecRequestsElemDataPersistenceDataOutElem) {
 	dataIn <- &InUnsorted{
-		Name:       rule.Name,
-		In:         extracted,
-		Retetntion: rule.Retention,
+		Name: rule.Name,
+		In:   extracted,
 	}
 }
 
 // Store interafce impl
-func (db *DataBroadcaster) RetrieveData(name string) interface{} {
+func (db *DataBroadcaster) RetrieveData(name string, retention bool) interface{} {
 	var ch chan interface{}
 	var out interface{}
 	for _, chans := range db.DataOut {
