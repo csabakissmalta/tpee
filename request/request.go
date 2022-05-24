@@ -37,7 +37,7 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 // does the request require session?
 func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) bool {
 	for _, d := range dp {
-		if d.Storage == "session-meta" {
+		if d.Storage.(string) == "session-meta" {
 			return true
 		}
 	}
@@ -50,8 +50,8 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	var r_res *http.Request
 	var sess *sessionstore.Session
 	// body_urlencoded
-
-	if isSessionRequired(dp) {
+	session_required := isSessionRequired(dp)
+	if session_required {
 		for {
 			sess = <-ss.SessionOut
 			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
