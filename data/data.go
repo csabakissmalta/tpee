@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	execconfig "github.com/csabakissmalta/tpee/exec"
-	store "github.com/csabakissmalta/tpee/store"
+	"github.com/csabakissmalta/tpee/store"
 )
 
 const (
@@ -18,43 +18,42 @@ const (
 	EXTR_TARGET_SESSION = "cookies"
 )
 
-func ExtractDataFromResponse(resp *http.Response, extr_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, storage store.Store) {
+func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsElemDataPersistenceDataOutElem, storage store.Store) {
 	// determine content type, based on response header
-	for _, rule := range extr_rules {
-		if rule.Target == EXTR_TARGET_BODY {
-			raw_ctype := resp.Header.Get("Content-Type")
-			ctype := strings.Split(raw_ctype, ";")[0]
-			switch {
-			case strings.Contains(ctype, "json"):
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					log.Println("DATA EXTRACTION ERROR:", err.Error())
-				}
-				defer resp.Body.Close()
-				to_push := extractFromJSONBody(body, *rule.Name)
-				// call to the store to save the data
-				storage.SaveData(to_push, rule)
-			default:
-				log.Println(ctype)
+	if rule.Target == EXTR_TARGET_BODY {
+		raw_ctype := resp.Header.Get("Content-Type")
+		ctype := strings.Split(raw_ctype, ";")[0]
+		switch {
+		case strings.Contains(ctype, "json"):
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Println("DATA EXTRACTION ERROR:", err.Error())
 			}
-		} else if rule.Target == EXTR_TARGET_HEADER {
-			// to make it more precise here
-			mems := strings.Split(rule.ContentType, "§")
-			ctype := resp.Header.Get(mems[0])
-			if len(mems) > 1 {
-				regex_ptr := mems[1]
-				matchmap := RegexpIt(regex_ptr, ctype)
-				for key, val := range matchmap {
-					if key == *rule.Name {
-						to_push := val
-						log.Printf("tpee: %s", val)
-						// call to the store to save the data
-						storage.SaveData(to_push, rule)
-					}
+			defer resp.Body.Close()
+			to_push := extractFromJSONBody(body, rule.Name)
+			// call to the store to save the data
+			storage.SaveData(to_push, rule)
+		default:
+			log.Println(ctype)
+		}
+	} else if rule.Target == EXTR_TARGET_HEADER {
+		// to make it more precise here
+		mems := strings.Split(rule.ContentType, "§")
+		ctype := resp.Header.Get(mems[0])
+		if len(mems) > 1 {
+			regex_ptr := mems[1]
+			matchmap := RegexpIt(regex_ptr, ctype)
+			for key, val := range matchmap {
+				if key == rule.Name {
+					to_push := val
+					log.Printf("tpee: %s", val)
+					// call to the store to save the data
+					storage.SaveData(to_push, rule)
 				}
 			}
 		}
 	}
+
 }
 
 func RegexpIt(regEx, src string) (rgxmap map[string]string) {

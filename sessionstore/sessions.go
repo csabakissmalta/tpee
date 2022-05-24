@@ -1,6 +1,10 @@
 package sessionstore
 
-import "time"
+import (
+	"time"
+
+	"github.com/csabakissmalta/tpee/exec"
+)
 
 type Session struct {
 	// id - unique
@@ -53,4 +57,18 @@ func NewSession(option ...SessionOption) *Session {
 		o(s)
 	}
 	return s
+}
+
+// store.Store interface impl for the session
+func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElemDataPersistenceDataOutElem) {
+	meta := sess.GetSessionMeta()
+	if meta.Data == nil {
+		meta.Data = make(map[string]interface{})
+	}
+	meta.Data[rule.Name] = extracted
+}
+
+// store.Store interface impl for the session
+func (sess *Session) RetrieveData(name string) interface{} {
+	return sess.Meta.Data[name]
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	data "github.com/csabakissmalta/tpee/data"
+	"github.com/csabakissmalta/tpee/datastore"
 	execconfig "github.com/csabakissmalta/tpee/exec"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 )
@@ -68,7 +69,7 @@ func New(option ...Option) *Task {
 	return t
 }
 
-func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store) *Task {
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster) *Task {
 	go func() {
 		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
@@ -81,15 +82,26 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		if res.StatusCode < 400 {
 			if extract_session {
 				go func() {
-					e := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
+					var session *sessionstore.Session
+					session, e := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
 					if e != nil {
 						log.Printf("ERROR: %s", e.Error())
 					}
+					if len(extract_rules) > 0 {
+						for _, erule := range extract_rules {
+							switch erule.Storage.(string) {
+							case "data-store":
+								data.ExtractDataFromResponse(res, erule, ds)
+							case "session-meta":
+								data.ExtractDataFromResponse(res, erule, session)
+							default:
+								// nothing happens
+							}
+						}
+					}
 				}()
 			}
-			if len(extract_rules) > 0 {
-				go data.ExtractDataFromResponse(res, extract_rules)
-			}
+
 		}
 		ts.Executed = true
 		if r_ch != nil {

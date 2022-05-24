@@ -104,7 +104,7 @@ func (db *DataBroadcaster) StartConsumingDataIn() {
 // Store interface impl
 func (db *DataBroadcaster) SaveData(extracted interface{}, rule *exec.ExecRequestsElemDataPersistenceDataOutElem) {
 	dataIn <- &InUnsorted{
-		Name:       *rule.Name,
+		Name:       rule.Name,
 		In:         extracted,
 		Retetntion: rule.Retention,
 	}
@@ -112,5 +112,12 @@ func (db *DataBroadcaster) SaveData(extracted interface{}, rule *exec.ExecReques
 
 // Store interafce impl
 func (db *DataBroadcaster) RetrieveData(name string) interface{} {
-	return nil
+	var ch chan interface{}
+	for _, chans := range db.DataOut {
+		if name == chans.Name {
+			ch = chans.Queue
+			break
+		}
+	}
+	return <-ch
 }

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	datastore "github.com/csabakissmalta/tpee/datastore"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
+	store "github.com/csabakissmalta/tpee/store"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
@@ -15,7 +15,7 @@ import (
 // 	return ""
 // }
 
-func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (string, error) {
+func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds store.Store, ss *sessionstore.Store) (string, error) {
 	match_feed := r_var.FindStringSubmatch(*in)
 	match_channel := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
@@ -63,14 +63,9 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 		}
 		var ret bool = true
-		for _, chans := range ds.DataOut {
-			if feed_varname == chans.Name {
-				ret = chans.Retention
-				ch = chans.Queue
-				break
-			}
-		}
-		elem := <-ch
+
+		elem := ds.RetrieveData(feed_varname)
+		ret = elem.Retention
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
 

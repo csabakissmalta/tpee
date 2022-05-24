@@ -26,7 +26,7 @@ func GetAllDataPersistenceDataNames(lst []*ExecRequestsElem) []string {
 	for _, le := range lst {
 		if le.DataPersistence != nil && len(le.DataPersistence.DataOut) > 0 {
 			for _, l := range le.DataPersistence.DataOut {
-				names = append(names, *l.Name)
+				names = append(names, l.Name)
 			}
 		}
 	}
