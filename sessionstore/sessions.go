@@ -1,7 +1,6 @@
 package sessionstore
 
 import (
-	"log"
 	"time"
 
 	"github.com/csabakissmalta/tpee/exec"
@@ -69,14 +68,9 @@ func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElem
 		}
 	}
 	sess.Meta.Data[rule.Name] = extracted.(string)
-	log.Println("--- SAVING META ---")
-	log.Println(sess.Meta.Data)
 }
 
 // store.Store interface impl for the session
 func (sess *Session) RetrieveData(name string) interface{} {
-	log.Println(sess)
-	log.Println(sess.Meta)
-	log.Println(sess.Meta.Data)
 	return sess.Meta.Data[name]
 }

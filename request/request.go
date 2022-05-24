@@ -54,14 +54,14 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 
 	log.Println("=============================================")
 	log.Println("NAME", t.TaskLabel)
-	log.Println("IS SESSION REQUIRED?", session_required)
+	log.Println("IS SESSION REQUIRED?", session_required, dname)
 
 	if session_required {
 		for {
 			sess = <-ss.SessionOut
-			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) > 0 && sess.Meta.Data[dname] != nil {
+			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) > 0 && sess.Meta != nil && sess.Meta.Data != nil && sess.Meta.Data[dname] != nil {
 				break
-			} else if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) > 0 && sess.Meta.Data[dname] == nil {
+			} else if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) > 0 && (sess.Meta == nil || sess.Meta.Data == nil || sess.Meta.Data[dname] == nil) {
 				ss.SessionOut <- sess
 			} else if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) == 0 {
 				break
