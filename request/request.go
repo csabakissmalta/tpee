@@ -56,6 +56,10 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	var sess *sessionstore.Session
 	// body_urlencoded
 	session_required := isSessionRequired(dp, env)
+
+	log.Println("=============================================")
+	log.Println("IS SESSION REQUIRED?", session_required)
+
 	if session_required {
 		for {
 			sess = <-ss.SessionOut
