@@ -67,7 +67,7 @@ func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElem
 			Data: make(map[string]interface{}),
 		}
 	}
-	meta.Data[rule.Name] = extracted
+	sess.Meta.Data[rule.Name] = extracted.(string)
 }
 
 // store.Store interface impl for the session
