@@ -79,18 +79,6 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 		}
-		// var session *sessionstore.Session
-		// if len(extract_rules) > 0 {
-		// 	session_required := isSessionRequired(data_in_rules, envvars)
-		// 	if session_required {
-		// 		for {
-		// 			session = <-ss.SessionOut
-		// 			if time.Since(session.Created) < sessionstore.SESSION_VALIDITY {
-		// 				break
-		// 			}
-		// 		}
-		// 	}
-		// }
 
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
