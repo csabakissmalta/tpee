@@ -109,31 +109,31 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		ts.Response = res
 		if res.StatusCode < 400 {
 
-			go func() {
+			// go func() {
 
-				if extract_session {
-					// meta := &sessionstore.Meta{}
-					ses, err := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
-					if err != nil {
-						log.Printf("ERROR: %s", err.Error())
-					}
-					ss.SessionIn <- ses
+			if extract_session {
+				// meta := &sessionstore.Meta{}
+				ses, err := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
+				if err != nil {
+					log.Printf("ERROR: %s", err.Error())
 				}
+				ss.SessionIn <- ses
+			}
 
-				for _, erule := range extract_rules {
-					log.Println(erule.Storage.(string))
-					switch erule.Storage.(string) {
-					case "data-store":
-						data.ExtractDataFromResponse(res, erule, ds)
-					case "session-meta":
-						data.ExtractDataFromResponse(res, erule, session)
-					default:
-						log.Printf("tpee: %s", "default")
-						// nothing happens
-					}
+			for _, erule := range extract_rules {
+				log.Println(erule.Storage.(string))
+				switch erule.Storage.(string) {
+				case "data-store":
+					data.ExtractDataFromResponse(res, erule, ds)
+				case "session-meta":
+					data.ExtractDataFromResponse(res, erule, session)
+				default:
+					log.Printf("tpee: %s", "default")
+					// nothing happens
 				}
+			}
 
-			}()
+			// }()
 
 		}
 		ts.Executed = true
