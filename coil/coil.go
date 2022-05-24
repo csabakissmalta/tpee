@@ -160,7 +160,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 		}
 
 		// compose/execute task here
-		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+		request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
 		tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
 
 		var next *task.Task
@@ -176,7 +176,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 			time.Sleep(time.Duration(dorm_period))
 
 			// compose/execute task here
-			request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+			request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
 			next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
 			tl.CurrectTask = next
 		}
@@ -199,7 +199,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 		if len(tl.RampupTasks) > 0 {
 			tl.CurrectTask = <-tl.RampupTasks
 			// compose/execute task here
-			request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+			request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
 			tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
 		}
 
@@ -211,7 +211,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				time.Sleep(time.Duration(dorm_period))
 
 				// compose/execute task here
-				request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+				request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
 				tl.CurrectTask = next
 			default:
@@ -221,7 +221,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				case <-engine_ticker.C:
 					// compose/execute task here
 					next = <-tl.Tasks
-					request.ComposeHttpRequest(next, *tl.RequestBlueprint, env, tl.Feeds, c.DataStore, c.SessionStore)
+					request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, env, tl.Feeds, c.DataStore, c.SessionStore)
 					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore)
 					tl.CurrectTask = next
 				}

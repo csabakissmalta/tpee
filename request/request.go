@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
@@ -33,15 +34,36 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 
 // ---------------------------------------------------
 
-func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
+// does the request require session?
+func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) bool {
+	for _, d := range dp {
+		if d.Storage == "session-meta" {
+			return true
+		}
+	}
+	return false
+}
+
+func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
 	var req_url string
 	var req_method string = p.Method
 	var r_res *http.Request
+	var sess *sessionstore.Session
 	// body_urlencoded
+
+	if isSessionRequired(dp) {
+		for {
+			sess = <-ss.SessionOut
+			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
+				break
+			}
+		}
+	}
+	// get a session, if required, based on the data in props
 
 	// check the postman request
 	// --- URL.Raw ---
-	out, err := validate_and_substitute(&p.URL.Raw, r, rds, rss, fds, ds, ss)
+	out, err := validate_and_substitute(&p.URL.Raw, r, rds, rss, fds, ds, sess, dp)
 	if err != nil {
 		log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 	}
@@ -51,7 +73,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 	if len(p.Body.Urlencoded) > 0 {
 		body_urlencoded := url.Values{}
 		for _, b := range p.Body.Urlencoded {
-			out, err := validate_and_substitute(&b.Value, r, rds, rss, fds, ds, ss)
+			out, err := validate_and_substitute(&b.Value, r, rds, rss, fds, ds, sess, dp)
 			if err != nil {
 				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
@@ -64,7 +86,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 		}
 		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
 	} else if len(p.Body.Raw) > 0 {
-		out, err := validate_and_substitute(&p.Body.Raw, r, rds, rss, fds, ds, ss)
+		out, err := validate_and_substitute(&p.Body.Raw, r, rds, rss, fds, ds, sess, dp)
 		if err != nil {
 			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 		}
@@ -80,7 +102,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 			if err != nil {
 				log.Printf("ERROR: %s", err.Error())
 			}
-			out, err := validate_and_substitute(&fd.Value, r, rds, rss, fds, ds, ss)
+			out, err := validate_and_substitute(&fd.Value, r, rds, rss, fds, ds, sess, dp)
 			if err != nil {
 				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
@@ -104,7 +126,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 
 	// --- Headers ---
 	for _, hdr := range p.Header {
-		out, err := validate_and_substitute(&hdr.Value, r, rds, rss, fds, ds, ss)
+		out, err := validate_and_substitute(&hdr.Value, r, rds, rss, fds, ds, sess, dp)
 		if err != nil {
 			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 		}
@@ -132,7 +154,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, env []*execconf.ExecEnv
 					token = autAttr.Value.(string)
 				}
 			}
-			out, err := validate_and_substitute(&token, r, rds, rss, fds, ds, ss)
+			out, err := validate_and_substitute(&token, r, rds, rss, fds, ds, sess, dp)
 			if err != nil {
 				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}

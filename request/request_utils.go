@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
+	datastore "github.com/csabakissmalta/tpee/datastore"
+	execconf "github.com/csabakissmalta/tpee/exec"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
-	store "github.com/csabakissmalta/tpee/store"
 	timeline "github.com/csabakissmalta/tpee/timeline"
 )
 
@@ -15,9 +15,20 @@ import (
 // 	return ""
 // }
 
-func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds store.Store, ss *sessionstore.Store) (string, error) {
+// whichDataStore is a function to determine from where to retrieve the data
+func whichDataStore(name string, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) string {
+	for _, d := range dp {
+		if name == d.Name {
+			return d.Storage.(string)
+			break
+		}
+	}
+	return ""
+}
+
+func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Session, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) (string, error) {
 	match_feed := r_var.FindStringSubmatch(*in)
-	match_channel := r_ds.FindStringSubmatch(*in)
+	match_data_in_storage := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
 
 	var ch chan interface{}
@@ -52,19 +63,29 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	}
 
 	// check DATA var match
-	if len(match_channel) > 0 {
+	if len(match_data_in_storage) > 0 {
 		for i, name := range r_ds.SubexpNames() {
-			if i > 0 && i <= len(match_channel) {
+			if i > 0 && i <= len(match_data_in_storage) {
 				if name == "CHAN" {
-					feed_varname = match_channel[i]
+					feed_varname = match_data_in_storage[i]
 				} else if name == "WHOLE" {
-					env_var_to_replace = match_channel[i]
+					env_var_to_replace = match_data_in_storage[i]
 				}
 			}
 		}
 		var ret bool = true
 
-		elem := ds.RetrieveData(feed_varname)
+		datasource_in := whichDataStore(feed_varname, dp)
+		var elem interface{}
+		switch datasource_in {
+		case "data-store":
+			elem = ds.RetrieveData(feed_varname)
+		case "session-meta":
+			elem = ss.RetrieveData(feed_varname)
+		default:
+			// do nothing
+		}
+
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
 
@@ -78,7 +99,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	// check SESSION var match
 	if len(match_session) > 0 {
 		var out string = *in
-		var sess *sessionstore.Session
 
 		for _, mtch := range match_session {
 			for i, name := range r_ss.SubexpNames() {
@@ -89,16 +109,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 
-			if sess == nil {
-				for {
-					sess = <-ss.SessionOut
-					if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
-						break
-					}
-				}
-			}
-
-			for _, c := range sess.ID.([]*http.Cookie) {
+			for _, c := range ss.ID.([]*http.Cookie) {
 				if sessionvar_name == c.Name {
 					env_var_replace_string = c.Value
 				}
@@ -108,7 +119,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				out = strings.Replace(out, env_var_to_replace, env_var_replace_string, -1)
 			}
 		}
-		ss.SessionIn <- sess
 		return out, nil
 	}
 	return *in, nil
