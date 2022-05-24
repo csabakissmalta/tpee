@@ -69,7 +69,18 @@ func New(option ...Option) *Task {
 	return t
 }
 
-func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster) *Task {
+// util method does the request require session?
+func isSessionRequired(dp []*execconfig.ExecRequestsElemDataPersistenceDataInElem) bool {
+	for _, d := range dp {
+		if d.Storage.(string) == "session-meta" {
+			return true
+		}
+	}
+	return false
+}
+
+func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, data_in_rules []*execconfig.ExecRequestsElemDataPersistenceDataInElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster) *Task {
+
 	go func() {
 		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
@@ -80,32 +91,45 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
 		if res.StatusCode < 400 {
-			if extract_session {
-				go func() {
-					var session *sessionstore.Session
+
+			go func() {
+				var session *sessionstore.Session
+				if extract_session {
 					// meta := &sessionstore.Meta{}
-					session, e := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
-					if e != nil {
-						log.Printf("ERROR: %s", e.Error())
+					session, err = ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
+					if err != nil {
+						log.Printf("ERROR: %s", err.Error())
 					}
 
-					if len(extract_rules) > 0 {
-						for _, erule := range extract_rules {
-							log.Println(erule.Storage.(string))
-							switch erule.Storage.(string) {
-							case "data-store":
-								data.ExtractDataFromResponse(res, erule, ds)
-							case "session-meta":
-								data.ExtractDataFromResponse(res, erule, session)
-							default:
-								log.Printf("tpee: %s", "default")
-								// nothing happens
+				}
+
+				if len(extract_rules) > 0 && !extract_session {
+					session_required := isSessionRequired(data_in_rules)
+					if session_required {
+						for {
+							session = <-ss.SessionOut
+							if time.Since(session.Created) < sessionstore.SESSION_VALIDITY {
+								break
 							}
 						}
 					}
-					ss.SessionIn <- session
-				}()
-			}
+				}
+
+				for _, erule := range extract_rules {
+					log.Println(erule.Storage.(string))
+					switch erule.Storage.(string) {
+					case "data-store":
+						data.ExtractDataFromResponse(res, erule, ds)
+					case "session-meta":
+						data.ExtractDataFromResponse(res, erule, session)
+					default:
+						log.Printf("tpee: %s", "default")
+						// nothing happens
+					}
+				}
+
+				ss.SessionIn <- session
+			}()
 
 		}
 		ts.Executed = true

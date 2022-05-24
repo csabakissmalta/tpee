@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
@@ -34,31 +33,13 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 
 // ---------------------------------------------------
 
-// does the request require session?
-func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) bool {
-	for _, d := range dp {
-		if d.Storage.(string) == "session-meta" {
-			return true
-		}
-	}
-	return false
-}
-
 func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, env []*execconf.ExecEnvironmentElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, error) {
 	var req_url string
 	var req_method string = p.Method
 	var r_res *http.Request
 	var sess *sessionstore.Session
 	// body_urlencoded
-	session_required := isSessionRequired(dp)
-	if session_required {
-		for {
-			sess = <-ss.SessionOut
-			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
-				break
-			}
-		}
-	}
+
 	// get a session, if required, based on the data in props
 
 	// check the postman request
