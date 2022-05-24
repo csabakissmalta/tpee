@@ -75,6 +75,8 @@ func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElem
 
 // store.Store interface impl for the session
 func (sess *Session) RetrieveData(name string) interface{} {
+	log.Println(sess)
+	log.Println(sess.Meta)
 	log.Println(sess.Meta.Data)
 	return sess.Meta.Data[name]
 }
