@@ -20,7 +20,6 @@ func whichDataStore(name string, dp []*execconf.ExecRequestsElemDataPersistenceD
 	for _, d := range dp {
 		if name == d.Name {
 			return d.Storage.(string)
-			break
 		}
 	}
 	return ""
