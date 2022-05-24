@@ -35,13 +35,13 @@ var rss = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<SESSIONVAR>[A-Za-z0-9\-_]{1,3
 // ---------------------------------------------------
 
 // does the request require session?
-func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, re *execconf.ExecRequestsElem) bool {
+func isSessionRequired(dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, re *execconf.ExecRequestsElem) (bool, string) {
 	for _, d := range dp {
 		if d.Storage.(string) == "session-meta" {
-			return true
+			return true, d.Name
 		}
 	}
-	return *re.UsesSession
+	return *re.UsesSession, ""
 }
 
 func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem, re *execconf.ExecRequestsElem, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Store) (*task.Task, *sessionstore.Session, error) {
@@ -50,7 +50,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	var r_res *http.Request
 	var sess *sessionstore.Session
 	// body_urlencoded
-	session_required := isSessionRequired(dp, re)
+	session_required, dname := isSessionRequired(dp, re)
 
 	log.Println("=============================================")
 	log.Println("NAME", t.TaskLabel)
@@ -59,7 +59,11 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	if session_required {
 		for {
 			sess = <-ss.SessionOut
-			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY {
+			if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) > 0 && sess.Meta.Data[dname] != nil {
+				break
+			} else if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) > 0 && sess.Meta.Data[dname] == nil {
+				ss.SessionOut <- sess
+			} else if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) == 0 {
 				break
 			}
 		}
