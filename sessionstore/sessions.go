@@ -62,8 +62,10 @@ func NewSession(option ...SessionOption) *Session {
 // store.Store interface impl for the session
 func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElemDataPersistenceDataOutElem) {
 	meta := sess.GetSessionMeta()
-	if meta.Data == nil {
-		meta.Data = make(map[string]interface{})
+	if meta == nil {
+		sess.Meta = &Meta{
+			Data: make(map[string]interface{}),
+		}
 	}
 	meta.Data[rule.Name] = extracted
 }
