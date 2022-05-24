@@ -83,13 +83,15 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 			if extract_session {
 				go func() {
 					var session *sessionstore.Session
-					meta := &sessionstore.Meta{}
-					session, e := ss.ExtractClientSessionFromResponse(res, ts.Request, meta) // <-- this needs to be corrected by the config, instead of nil
+					// meta := &sessionstore.Meta{}
+					session, e := ss.ExtractClientSessionFromResponse(res, ts.Request, nil) // <-- this needs to be corrected by the config, instead of nil
 					if e != nil {
 						log.Printf("ERROR: %s", e.Error())
 					}
+
 					if len(extract_rules) > 0 {
 						for _, erule := range extract_rules {
+							log.Println(erule.Storage.(string))
 							switch erule.Storage.(string) {
 							case "data-store":
 								data.ExtractDataFromResponse(res, erule, ds)
