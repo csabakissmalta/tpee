@@ -82,7 +82,6 @@ func (s *Store) ExtractClientSessionFromResponse(resp *http.Response, req *http.
 			// with metadata
 			WithMetaData(met),
 		)
-		s.SessionIn <- newSession
 		return newSession, nil
 	} else {
 		return nil, errors.New("could not extract session from response")

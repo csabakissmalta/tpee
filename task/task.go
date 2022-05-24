@@ -99,6 +99,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 							}
 						}
 					}
+					ss.SessionIn <- session
 				}()
 			}
 
