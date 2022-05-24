@@ -1,6 +1,7 @@
 package request
 
 import (
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -84,6 +85,8 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		default:
 			// do nothing
 		}
+
+		log.Println("*** ELEM:", elem)
 
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
