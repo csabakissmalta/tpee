@@ -70,5 +70,9 @@ func (sess *Session) SaveData(extracted interface{}, rule *exec.ExecRequestsElem
 
 // store.Store interface impl for the session
 func (sess *Session) RetrieveData(name string) interface{} {
+	if sess.Meta == nil {
+		sess.Meta = &Meta{}
+		return nil
+	}
 	return sess.Meta.Data[name]
 }
