@@ -62,6 +62,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 			} else if time.Since(sess.Created) < sessionstore.SESSION_VALIDITY && len(dname) == 0 {
 				break
 			}
+
 		}
 	}
 	// get a session, if required, based on the data in props
@@ -137,6 +138,10 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		}
 		// log.Println(out)
 		r_res.Header.Set(hdr.Key, out)
+
+		if session_required && sess != nil {
+			r_res.Header.Set("Cookie", sess.ID.(string))
+		}
 	}
 
 	if p.Auth.Type != "" {
