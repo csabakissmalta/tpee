@@ -173,15 +173,14 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 
 	if session_required && sess != nil {
 		for _, c := range sess.ID.([]*http.Cookie) {
-			log.Println(c)
 			r_res.AddCookie(c)
 		}
 	}
 
 	task.WithRequest(r_res)(t)
-	if sess != nil {
-		ss.SessionIn <- sess
-	}
+	// if sess != nil {
+	// 	ss.SessionIn <- sess
+	// }
 
 	return t, sess, nil
 }
