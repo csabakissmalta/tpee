@@ -89,7 +89,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		if err != nil {
 			return nil, nil, err
 		}
-		r_res.Header.Add("Content-Length", strconv.Itoa(len(encoded_data)))
+		r_res.Header.Set("Content-Length", strconv.Itoa(len(encoded_data)))
 	} else if len(p.Body.Raw) > 0 {
 		out, err := validate_and_substitute(&p.Body.Raw, r, rds, rss, fds, ds, sess, dp)
 		if err != nil {
@@ -136,7 +136,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 		}
 		// log.Println(out)
-		r_res.Header.Add(hdr.Key, out)
+		r_res.Header.Set(hdr.Key, out)
 	}
 
 	if p.Auth.Type != "" {
@@ -163,7 +163,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 			if err != nil {
 				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
 			}
-			r_res.Header.Add("Authorization", "Bearer"+out)
+			r_res.Header.Set("Authorization", "Bearer"+out)
 		case "noauth":
 			// do nothing
 		default:
