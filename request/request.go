@@ -140,7 +140,9 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		r_res.Header.Set(hdr.Key, out)
 
 		if session_required && sess != nil {
-			r_res.Header.Set("Cookie", sess.ID.(string))
+			for _, c := range sess.ID.([]*http.Cookie) {
+				r_res.AddCookie(c)
+			}
 		}
 	}
 
