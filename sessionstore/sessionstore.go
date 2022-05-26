@@ -49,7 +49,6 @@ func WithInOutCapacity(cap int) StoreOption {
 
 // Start consuming the sessions from the requests
 func (s *Store) Start() {
-	log.Println("START SESSION STORE")
 	for {
 		select {
 		case ns, ok := <-s.SessionIn:
@@ -57,8 +56,6 @@ func (s *Store) Start() {
 			if ok && time.Since(ns.Created) < SESSION_VALIDITY {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
-			} else {
-				// do nothing
 			}
 		default:
 			log.Println("no session - - - default")

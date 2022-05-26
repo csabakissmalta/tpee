@@ -3,7 +3,6 @@
 package timeline
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -86,15 +85,28 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 		second := float64(time.Second)
 		t.RamUpCallsCount = c
 
-		for i, p := range initPoints {
-			tm := ((p + float64(t.Rules.DelaySeconds)) * second) / float64(time.Nanosecond)
-			tsk := task.New(
-				task.WithPlannedExecTimeNanos(int(tm)),
-				task.WithLabel(t.Rules.Name),
-			)
-			t.RampupTasks <- tsk
-			log.Println(i)
-		}
+		// for _, p := range initPoints {
+		var i int = 0
+		go func() {
+			for {
+				switch {
+				case len(t.RampupTasks) < 10000:
+					p := initPoints[i]
+					tm := ((p + float64(t.Rules.DelaySeconds)) * second) / float64(time.Nanosecond)
+					tsk := task.New(
+						task.WithPlannedExecTimeNanos(int(tm)),
+						task.WithLabel(t.Rules.Name),
+					)
+					t.RampupTasks <- tsk
+					i++
+				case i == len(initPoints):
+					return
+				default:
+					// do nothing
+					continue
+				}
+			}
+		}()
 	}
 
 	// check env elements and load feeds if there is any feedValue type

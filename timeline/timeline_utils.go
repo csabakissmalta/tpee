@@ -78,15 +78,25 @@ func calc_periods(dur int, step int, er *execconf.ExecRequestsElem, rq *postman.
 	// the count of markers is (duration - delay) * frequency
 	m_count := (dur - er.DelaySeconds) * er.Frequency
 
-	ch := make(chan *task.Task, m_count)
+	ch := make(chan *task.Task, 10000)
+	var i int = er.DelaySeconds * er.Frequency
+	// ; i < int(m_count); i++
 	go func() {
-		for i := er.DelaySeconds * er.Frequency; i < int(m_count); i++ {
-			curr_step := i * step
-			ch <- task.New(
-				task.WithPlannedExecTimeNanos(curr_step),
-				task.WithLabel(er.Name),
-			)
-			log.Println(i)
+		for {
+			switch {
+			case len(ch) < cap(ch):
+				curr_step := i * step
+				ch <- task.New(
+					task.WithPlannedExecTimeNanos(curr_step),
+					task.WithLabel(er.Name),
+				)
+				i++
+			case i == int(m_count):
+				return
+			default:
+				continue
+				// do nothing
+			}
 		}
 	}()
 	return ch
