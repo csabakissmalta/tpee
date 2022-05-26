@@ -31,8 +31,9 @@ type SessionOption func(*Session)
 
 // option with created time
 func WithTimeCreatedNow() SessionOption {
+	tn := time.Now()
 	return func(s *Session) {
-		s.Created = time.Now()
+		s.Created = tn
 	}
 }
 
