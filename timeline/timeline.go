@@ -90,7 +90,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 		go func() {
 			for {
 				switch {
-				case len(t.RampupTasks) < 10000:
+				case len(t.RampupTasks) > 0 && len(t.RampupTasks) < 10000:
 					p := initPoints[i]
 					tm := ((p + float64(t.Rules.DelaySeconds)) * second) / float64(time.Nanosecond)
 					tsk := task.New(
