@@ -86,6 +86,7 @@ func calc_periods(dur int, step int, er *execconf.ExecRequestsElem, rq *postman.
 				task.WithPlannedExecTimeNanos(curr_step),
 				task.WithLabel(er.Name),
 			)
+			log.Println(i)
 		}
 	}()
 	return ch
