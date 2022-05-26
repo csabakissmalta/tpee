@@ -2,6 +2,7 @@ package sessionstore
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -56,7 +57,8 @@ func (s *Store) Start() {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
 			} else {
-				continue
+				log.Println("no session - - -")
+				// do nothing
 			}
 		default:
 			continue
