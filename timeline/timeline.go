@@ -80,33 +80,35 @@ func New(option ...Option) *Timeline {
 
 func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup) {
 	// populate rampup period if set
-	if rmp != nil {
-		go func() {
-			rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
-			t.RampupTasks = make(chan *task.Task, len(rmp_points))
-			for _, p := range rmp_points {
-				t.RampupTasks <- p
-			}
-		}()
-	}
+	go func() {
+		if rmp != nil {
+			go func() {
+				rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
+				t.RampupTasks = make(chan *task.Task, len(rmp_points))
+				for _, p := range rmp_points {
+					t.RampupTasks <- p
+				}
+			}()
+		}
 
-	// check env elements and load feeds if there is any feedValue type
-	timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks)
-	t.Feeds = load_feeds_if_required(timeline_dimension, env)
+		// check env elements and load feeds if there is any feedValue type
+		timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks)
+		t.Feeds = load_feeds_if_required(timeline_dimension, env)
 
-	// The step between the markers
-	second := time.Second
-	convers := int(second / time.Nanosecond)
-	step := int(convers / t.Rules.Frequency)
+		// The step between the markers
+		second := time.Second
+		convers := int(second / time.Nanosecond)
+		step := int(convers / t.Rules.Frequency)
 
-	// Set the step duration for the timeline as well
-	t.StepDuration = step
+		// Set the step duration for the timeline as well
+		t.StepDuration = step
 
-	// Create time markers - empty tasks
-	t.Tasks = calc_periods(dur, step, t.Rules, r)
+		// Create time markers - empty tasks
+		t.Tasks = calc_periods(dur, step, t.Rules, r)
 
-	// set the resulting postman request
-	t.RequestBlueprint = r
+		// set the resulting postman request
+		t.RequestBlueprint = r
+	}()
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
