@@ -50,9 +50,9 @@ func WithInOutCapacity(cap int) StoreOption {
 func (s *Store) Start() {
 	for {
 		select {
-		case ns := <-s.SessionIn:
+		case ns, ok := <-s.SessionIn:
 			// check session validity
-			if ns != nil && time.Since(ns.Created) < SESSION_VALIDITY {
+			if ok && time.Since(ns.Created) < SESSION_VALIDITY {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
 			} else {
