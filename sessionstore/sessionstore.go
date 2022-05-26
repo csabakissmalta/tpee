@@ -61,6 +61,7 @@ func (s *Store) Start() {
 				// do nothing
 			}
 		default:
+			log.Println("no session - - - default")
 			continue
 		}
 
