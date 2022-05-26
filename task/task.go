@@ -92,7 +92,9 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 				if err != nil {
 					log.Printf("ERROR: %s", err.Error())
 				}
-				ss.SessionIn <- ses
+				if ses != nil {
+					ss.SessionIn <- ses
+				}
 			}
 
 			for _, erule := range extract_rules {

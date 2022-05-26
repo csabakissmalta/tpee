@@ -53,7 +53,7 @@ func (s *Store) Start() {
 		select {
 		case ns, ok := <-s.SessionIn:
 			// check session validity  && time.Since(ns.Created) < SESSION_VALIDITY
-			if ok {
+			if ok && ns != nil {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
 			} else {
