@@ -52,10 +52,12 @@ func (s *Store) Start() {
 	for {
 		select {
 		case ns, ok := <-s.SessionIn:
-			// check session validity
-			if ok && time.Since(ns.Created) < SESSION_VALIDITY {
+			// check session validity  && time.Since(ns.Created) < SESSION_VALIDITY
+			if ok {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
+			} else {
+				time.Sleep(time.Duration(500 * time.Millisecond))
 			}
 		default:
 			log.Println("no session - - - default")
