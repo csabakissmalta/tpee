@@ -62,7 +62,7 @@ func (s *Store) Start() {
 			}
 		default:
 			log.Println("no session - - - default")
-			continue
+			time.Sleep(time.Duration(500 * time.Millisecond))
 		}
 
 		// ringbuffer-like trait, to prevent channel block
