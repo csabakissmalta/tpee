@@ -55,6 +55,8 @@ func (s *Store) Start() {
 			if ns != nil && time.Since(ns.Created) < SESSION_VALIDITY {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
+			} else {
+				continue
 			}
 		default:
 			continue
