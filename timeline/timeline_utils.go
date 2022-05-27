@@ -53,6 +53,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 		})
 
 		var i int = 0
+		var cntr int = 0
 		for {
 			d := make(map[string]string)
 			for idx, hkey := range csv_header {
@@ -60,7 +61,8 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 			}
 			f.Value <- d
 			i++
-			if i == dim {
+			cntr++
+			if cntr == dim {
 				break
 			} else if i == len(rec) {
 				i = 0
