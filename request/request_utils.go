@@ -1,6 +1,7 @@
 package request
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"regexp"
@@ -55,7 +56,13 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 		}
 		elem := <-ch
-		env_var_replace_string = elem.(map[string]string)[feed_varname]
+
+		elem_map, ok := elem.(map[string]string)
+		if !ok {
+			return "", errors.New("conversion error")
+		}
+
+		env_var_replace_string = elem_map[feed_varname]
 		// log.Println(env_var_replace_string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
 		ch <- env_var_replace_string
