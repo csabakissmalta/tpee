@@ -120,5 +120,5 @@ func (db *DataBroadcaster) RetrieveData(name string, retention bool) interface{}
 		}
 	}
 	out = <-ch
-	return <-out.(Data).Queue
+	return out.(string)
 }
