@@ -76,12 +76,12 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 	go func() {
 		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
+		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 			return
 		}
 
-		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		ts.Response = res
 		if res.StatusCode < 400 {
 
