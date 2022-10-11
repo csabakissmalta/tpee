@@ -87,27 +87,27 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 		// for _, p := range initPoints {
 		var i int = 0
-		go func() {
-			for {
-				switch {
-				// case len(t.RampupTasks) > 0 && len(t.RampupTasks) < 10000:
-				case *rmp.DurationSeconds > 0:
-					p := initPoints[i]
-					tm := ((p + float64(t.Rules.DelaySeconds)) * second) / float64(time.Nanosecond)
-					tsk := task.New(
-						task.WithPlannedExecTimeNanos(int(tm)),
-						task.WithLabel(t.Rules.Name),
-					)
-					t.RampupTasks <- tsk
-					i++
-				case i == len(initPoints):
-					return
-				default:
-					// do nothing
-					continue
-				}
+		// go func() {
+		for {
+			switch {
+			// case len(t.RampupTasks) > 0 && len(t.RampupTasks) < 10000:
+			case *rmp.DurationSeconds > 0:
+				p := initPoints[i]
+				tm := ((p + float64(t.Rules.DelaySeconds)) * second) / float64(time.Nanosecond)
+				tsk := task.New(
+					task.WithPlannedExecTimeNanos(int(tm)),
+					task.WithLabel(t.Rules.Name),
+				)
+				t.RampupTasks <- tsk
+				i++
+			case i == len(initPoints):
+				return
+			default:
+				// do nothing
+				continue
 			}
-		}()
+		}
+		// }()
 	}
 
 	// check env elements and load feeds if there is any feedValue type
