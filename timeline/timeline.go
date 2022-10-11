@@ -3,6 +3,7 @@
 package timeline
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -84,6 +85,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 		initPoints, c := PointsPlannedTimestamps(int64(t.Rules.Frequency), Rampup(*rmp.RampupType), *rmp.DurationSeconds)
 		second := float64(time.Second)
 		t.RamUpCallsCount = c
+		t.RampupTasks = make(chan *task.Task, c)
 
 		// for _, p := range initPoints {
 		var i int = 0
@@ -103,6 +105,9 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 			case i == len(initPoints):
 				return
 			default:
+				log.Println("\033[G\033[K")
+				log.Println("RAMPUP LENGTH: ", i)
+				log.Println("\033[A")
 				// do nothing
 				continue
 			}
