@@ -3,7 +3,6 @@
 package timeline
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -82,37 +81,13 @@ func New(option ...Option) *Timeline {
 func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup) {
 	// populate rampup period if set
 	if rmp != nil {
-		initPoints, c := PointsPlannedTimestamps(int64(t.Rules.Frequency), Rampup(*rmp.RampupType), *rmp.DurationSeconds)
-		second := float64(time.Second)
-		t.RamUpCallsCount = c
-		t.RampupTasks = make(chan *task.Task, c)
-
-		// for _, p := range initPoints {
-		var i int = 0
-		// go func() {
-		for {
-			switch {
-			// case len(t.RampupTasks) > 0 && len(t.RampupTasks) < 10000:
-			case *rmp.DurationSeconds > 0:
-				p := initPoints[i]
-				tm := ((p + float64(t.Rules.DelaySeconds)) * second) / float64(time.Nanosecond)
-				tsk := task.New(
-					task.WithPlannedExecTimeNanos(int(tm)),
-					task.WithLabel(t.Rules.Name),
-				)
-				t.RampupTasks <- tsk
-				i++
-			case i == len(initPoints):
-				return
-			default:
-				log.Println("\033[G\033[K")
-				log.Println("RAMPUP LENGTH: ", i)
-				log.Println("\033[A")
-				// do nothing
-				continue
+		if rmp != nil {
+			rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
+			t.RampupTasks = make(chan *task.Task, len(rmp_points))
+			for _, p := range rmp_points {
+				t.RampupTasks <- p
 			}
 		}
-		// }()
 	}
 
 	// check env elements and load feeds if there is any feedValue type
