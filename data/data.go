@@ -25,17 +25,21 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		switch {
 		case strings.Contains(ctype, "json"):
 			// body, err := io.ReadAll(resp.Body)
-			intf := make(map[string]interface{})
+			var intf_ interface{}
 			// e := json.Unmarshal(b, &intf)
 			// if e != nil {
 			// 	log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into map):", e.Error())
 			// 	return ""
 			// }
 
-			dec := json.NewDecoder(resp.Body)
-			err := dec.Decode(&intf)
+			err := json.NewDecoder(resp.Body).Decode(&intf_)
 			if err != nil {
 				log.Println("DATA EXTRACTION ERROR (Read body):", err.Error())
+			}
+
+			intf, ok := intf_.(map[string]interface{})
+			if !ok {
+				log.Fatal("Error converting unmarshalled data to map")
 			}
 			// to_push := extractFromJSONBody(body, rule.Name)
 			to_push := intf[rule.Name].(string)
