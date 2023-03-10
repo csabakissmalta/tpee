@@ -2,7 +2,7 @@ package data
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -25,7 +25,7 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		ctype := strings.Split(raw_ctype, ";")[0]
 		switch {
 		case strings.Contains(ctype, "json"):
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Println("DATA EXTRACTION ERROR:", err.Error())
 			}
