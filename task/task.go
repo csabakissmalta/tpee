@@ -110,7 +110,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 					// nothing happens
 				}
 			}
-			defer res.Body.Close()
+			// defer res.Body.Close()
 			// }()
 
 		}
