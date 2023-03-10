@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -24,18 +25,18 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		ctype := strings.Split(raw_ctype, ";")[0]
 		switch {
 		case strings.Contains(ctype, "json"):
-			// body, err := io.ReadAll(resp.Body)
+			body, _ := io.ReadAll(resp.Body)
 			var intf_ interface{}
-			// e := json.Unmarshal(b, &intf)
-			// if e != nil {
-			// 	log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into map):", e.Error())
-			// 	return ""
-			// }
-
-			err := json.NewDecoder(resp.Body).Decode(&intf_)
-			if err != nil {
-				log.Println("DATA EXTRACTION ERROR (Read body):", err.Error())
+			e := json.Unmarshal(body, &intf_)
+			if e != nil {
+				log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into interface):", e.Error())
+				// return ""
 			}
+
+			// err := json.NewDecoder(resp.Body).Decode(&intf_)
+			// if err != nil {
+			// 	log.Println("DATA EXTRACTION ERROR (Read body):", err.Error())
+			// }
 
 			intf, ok := intf_.(map[string]interface{})
 			if !ok {
