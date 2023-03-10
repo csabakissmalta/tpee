@@ -27,7 +27,7 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		case strings.Contains(ctype, "json"):
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
-				log.Println("DATA EXTRACTION ERROR:", err.Error())
+				log.Println("DATA EXTRACTION ERROR (Read body):", err.Error())
 			}
 			to_push := extractFromJSONBody(body, rule.Name)
 			// call to the store to save the data
@@ -71,7 +71,7 @@ func extractFromJSONBody(b []byte, key string) string {
 	intf := make(map[string]interface{})
 	e := json.Unmarshal(b, &intf)
 	if e != nil {
-		log.Println("DATA EXTRACTION ERROR:", e.Error())
+		log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into map):", e.Error())
 		return ""
 	}
 	result := intf[key].(string)
