@@ -2,7 +2,6 @@ package data
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -25,11 +24,21 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		ctype := strings.Split(raw_ctype, ";")[0]
 		switch {
 		case strings.Contains(ctype, "json"):
-			body, err := io.ReadAll(resp.Body)
+			// body, err := io.ReadAll(resp.Body)
+			intf := make(map[string]interface{})
+			// e := json.Unmarshal(b, &intf)
+			// if e != nil {
+			// 	log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into map):", e.Error())
+			// 	return ""
+			// }
+
+			dec := json.NewDecoder(resp.Body)
+			err := dec.Decode(&intf)
 			if err != nil {
 				log.Println("DATA EXTRACTION ERROR (Read body):", err.Error())
 			}
-			to_push := extractFromJSONBody(body, rule.Name)
+			// to_push := extractFromJSONBody(body, rule.Name)
+			to_push := intf[rule.Name].(string)
 			// call to the store to save the data
 			storage.SaveData(to_push, rule)
 		default:
@@ -67,13 +76,13 @@ func RegexpIt(regEx, src string) (rgxmap map[string]string) {
 	return rgxmap
 }
 
-func extractFromJSONBody(b []byte, key string) string {
-	intf := make(map[string]interface{})
-	e := json.Unmarshal(b, &intf)
-	if e != nil {
-		log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into map):", e.Error())
-		return ""
-	}
-	result := intf[key].(string)
-	return result
-}
+// func extractFromJSONBody(b []byte, key string) string {
+// 	intf := make(map[string]interface{})
+// 	e := json.Unmarshal(b, &intf)
+// 	if e != nil {
+// 		log.Println("DATA EXTRACTION ERROR (Unmarshal bytes into map):", e.Error())
+// 		return ""
+// 	}
+// 	result := intf[key].(string)
+// 	return result
+// }
