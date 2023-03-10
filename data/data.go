@@ -29,7 +29,6 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 			if err != nil {
 				log.Println("DATA EXTRACTION ERROR:", err.Error())
 			}
-			defer resp.Body.Close()
 			to_push := extractFromJSONBody(body, rule.Name)
 			// call to the store to save the data
 			storage.SaveData(to_push, rule)
