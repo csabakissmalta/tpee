@@ -26,6 +26,9 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		switch {
 		case strings.Contains(ctype, "json"):
 			body, _ := io.ReadAll(resp.Body)
+
+			log.Println(string(body))
+
 			var intf_ interface{}
 			e := json.Unmarshal(body, &intf_)
 			if e != nil {
