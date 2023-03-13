@@ -27,7 +27,7 @@ func ExtractDataFromResponse(resp *http.Response, rule *execconfig.ExecRequestsE
 		case strings.Contains(ctype, "json"):
 			body, _ := io.ReadAll(resp.Body)
 
-			log.Println(string(body))
+			// log.Println(string(body))
 
 			var intf_ interface{}
 			e := json.Unmarshal(body, &intf_)
