@@ -1,7 +1,7 @@
 package request
 
 import (
-	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -59,7 +59,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 		elem_map, ok := elem.(map[string]string)
 		if !ok {
-			return "", errors.New("conversion error")
+			return "", fmt.Errorf("conversion error: %v, %v", elem_map, elem)
 		}
 
 		env_var_replace_string = elem_map[feed_varname]
