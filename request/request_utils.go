@@ -56,7 +56,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 		}
 		elem := <-ch
-
+		fmt.Printf(":: Conversion: %v", elem)
 		elem_map, ok := elem.(map[string]string)
 		if !ok {
 			return "", fmt.Errorf("conversion error: %v, %v", elem_map, elem)
