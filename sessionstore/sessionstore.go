@@ -57,15 +57,15 @@ func (s *Store) Start() {
 				s.SessionOut <- ns
 				// log.Println("items in out:", len(s.SessionOut))
 			} else {
-				time.Sleep(time.Duration(500 * time.Millisecond))
+				time.Sleep(time.Duration(50 * time.Millisecond))
 			}
 		default:
 			log.Println("no session - - - default")
-			time.Sleep(time.Duration(500 * time.Millisecond))
+			time.Sleep(time.Duration(50 * time.Millisecond))
 		}
 
 		// ringbuffer-like trait, to prevent channel block
-		if len(s.SessionOut) == STORE_CAPACITY {
+		if len(s.SessionOut) == STORE_CAPACITY-1 {
 			<-s.SessionOut
 		}
 	}
