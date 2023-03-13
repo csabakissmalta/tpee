@@ -70,7 +70,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	// --- URL.Raw ---
 	out, err := validate_and_substitute(&p.URL.Raw, r, rds, rss, fds, ds, sess, dp)
 	if err != nil {
-		log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+		log.Printf("SUBSTITUTE VAR ERROR (URL Raw): %s", err.Error())
 	}
 	req_url = out
 
@@ -80,7 +80,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 		for _, b := range p.Body.Urlencoded {
 			out, err := validate_and_substitute(&b.Value, r, rds, rss, fds, ds, sess, dp)
 			if err != nil {
-				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+				log.Printf("SUBSTITUTE VAR ERROR (Body if Urlencoded): %s", err.Error())
 			}
 			body_urlencoded.Set(b.Key, out)
 		}
@@ -93,7 +93,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	} else if len(p.Body.Raw) > 0 {
 		out, err := validate_and_substitute(&p.Body.Raw, r, rds, rss, fds, ds, sess, dp)
 		if err != nil {
-			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+			log.Printf("SUBSTITUTE VAR ERROR (Body if Raw): %s", err.Error())
 		}
 		r_res, err = http.NewRequest(req_method, req_url, bytes.NewBuffer([]byte(out)))
 		if err != nil {
@@ -109,7 +109,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 			}
 			out, err := validate_and_substitute(&fd.Value, r, rds, rss, fds, ds, sess, dp)
 			if err != nil {
-				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+				log.Printf("SUBSTITUTE VAR ERROR (Body if Form): %s", err.Error())
 			}
 			_, err = io.Copy(fw, strings.NewReader(out))
 			if err != nil {
@@ -133,7 +133,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 	for _, hdr := range p.Header {
 		out, err := validate_and_substitute(&hdr.Value, r, rds, rss, fds, ds, sess, dp)
 		if err != nil {
-			log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+			log.Printf("SUBSTITUTE VAR ERROR (Headers): %s", err.Error())
 		}
 		// log.Println(out)
 		r_res.Header.Add(hdr.Key, out)
@@ -161,7 +161,7 @@ func ComposeHttpRequest(t *task.Task, p postman.Request, dp []*execconf.ExecRequ
 			}
 			out, err := validate_and_substitute(&token, r, rds, rss, fds, ds, sess, dp)
 			if err != nil {
-				log.Printf("SUBSTITUTE VAR ERROR: %s", err.Error())
+				log.Printf("SUBSTITUTE VAR ERROR (Bearer Token): %s", err.Error())
 			}
 			r_res.Header.Add("Authorization", "Bearer"+out)
 		case "noauth":
