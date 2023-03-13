@@ -2,7 +2,6 @@ package sessionstore
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"time"
 )
@@ -60,7 +59,7 @@ func (s *Store) Start() {
 				time.Sleep(time.Duration(50 * time.Millisecond))
 			}
 		default:
-			log.Println("no session - - - default")
+			// log.Println("no session - - - default")
 			time.Sleep(time.Duration(50 * time.Millisecond))
 		}
 
