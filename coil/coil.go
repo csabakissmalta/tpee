@@ -201,8 +201,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 		if len(tl.RampupTasks) > 0 {
 			tl.CurrectTask = <-tl.RampupTasks
 			// compose/execute task here
-			_, ses, _ := request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
-			tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
+			// _, ses, _ := request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
+			// tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 		}
 
 		for {
@@ -219,12 +219,11 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				log.Println(corr, " :: correction")
 				log.Println(dorm_period, " :: dorm period")
 
-				time.Sleep(time.Duration(dorm_period))
-
 				// compose/execute task here
 				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 				tl.CurrectTask = next
+				time.Sleep(time.Duration(dorm_period))
 
 				// rampupStopwatch = time.Since(testStartTime)
 			default:
