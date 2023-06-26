@@ -213,7 +213,11 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
 
 				// let's get the stopwatch time and compare the difference
-				cmp_time := next.PlannedExecTimeNanos*int(time.Nanosecond) - int(rampupStopwatch.Nanoseconds())
+				cmp_time := next.PlannedExecTimeNanos - int(rampupStopwatch.Nanoseconds())
+
+				log.Println("TIMELINE WAIT:: ", dorm_period)
+				log.Println("CORRECTED WAIT:: ", cmp_time)
+
 				if dorm_period > cmp_time {
 					time.Sleep(time.Duration(cmp_time))
 				} else {
