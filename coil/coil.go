@@ -222,7 +222,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 				tl.CurrectTask = next
-				corr = time.Since(tl.CurrectTask.ExecutionTime).Nanoseconds()
+				corr = time.Since(*tl.CurrectTask.ExecutionTime).Nanoseconds()
 
 				// rampupStopwatch = time.Since(testStartTime)
 			default:

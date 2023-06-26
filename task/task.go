@@ -20,7 +20,7 @@ type Task struct {
 	PlannedExecTimeNanos int
 
 	// Execution absolute time
-	ExecutionTime time.Time
+	ExecutionTime *time.Time
 
 	// HTTP request - ready to execute
 	Request *http.Request
@@ -74,9 +74,10 @@ func New(option ...Option) *Task {
 func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, data_in_rules []*execconfig.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconfig.ExecEnvironmentElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster, session_in *sessionstore.Session) *Task {
 
 	go func() {
-		ts.ExecutionTime = time.Now()
+		n := time.Now()
+		ts.ExecutionTime = &n
 		res, err := c.Do(ts.Request)
-		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
+		ts.ResponseTime = time.Since(*ts.ExecutionTime).Milliseconds()
 		if err != nil {
 			log.Printf("ERROR: error executing request. %s", err.Error())
 			return
