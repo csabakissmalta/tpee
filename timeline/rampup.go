@@ -78,7 +78,7 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 	tl.RamUpCallsCount = c
 
 	for _, p := range initPoints {
-		t := ((p + delay) * second) * float64(time.Nanosecond)
+		t := ((p + delay) * second) / float64(time.Nanosecond)
 		rampupPts = append(rampupPts, task.New(
 			task.WithPlannedExecTimeNanos(int(t)),
 			task.WithLabel(label),

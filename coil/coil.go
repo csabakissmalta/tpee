@@ -194,7 +194,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 	var next *task.Task
 	var corr int64
-	// var testStartTime time.Time = time.Now()
+	var testStartTime time.Time = time.Now()
 
 	// Start the timer
 	go func() {
@@ -209,6 +209,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			select {
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
+				elapsedTotal := time.Since(testStartTime).Nanoseconds()
+				corr = elapsedTotal - int64(next.PlannedExecTimeNanos)
 				planned_delta := time.Duration(next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos).Nanoseconds()
 				dorm_period := planned_delta - corr
 
@@ -222,7 +224,6 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 				tl.CurrectTask = next
-				corr = time.Since(tl.CurrectTask.ExecutionTime).Nanoseconds()
 
 				// rampupStopwatch = time.Since(testStartTime)
 			default:
