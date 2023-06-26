@@ -194,7 +194,6 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 	var next *task.Task
 	var testStartTime time.Time = time.Now()
-	var rampupStopwatch time.Duration = 0
 
 	// Start the timer
 	go func() {
@@ -203,32 +202,23 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			// compose/execute task here
 			_, ses, _ := request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
 			tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
-			rampupStopwatch = time.Since(testStartTime)
 		}
 
 		for {
 			select {
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
-				dorm_period := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
+				delta := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
+				corr := tl.CurrectTask.ExecutionTime.Sub(testStartTime).Nanoseconds()
+				dorm_period := delta - int(corr)
 
-				// let's get the stopwatch time and compare the difference
-				cmp_time := next.PlannedExecTimeNanos - int(rampupStopwatch.Nanoseconds())
-
-				log.Println(dorm_period, " :: TIMELINE WAIT")
-				log.Println(cmp_time, " :: CORRECTED WAIT")
-
-				if dorm_period > cmp_time {
-					time.Sleep(time.Duration(cmp_time))
-				} else {
-					time.Sleep(time.Duration(dorm_period))
-				}
+				time.Sleep(time.Duration(dorm_period))
 
 				// compose/execute task here
 				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
 				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 				tl.CurrectTask = next
-				rampupStopwatch = time.Since(testStartTime)
+				// rampupStopwatch = time.Since(testStartTime)
 			default:
 				select {
 				case <-done:
