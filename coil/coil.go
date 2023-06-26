@@ -209,8 +209,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
 				planned_delta := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
-				corr := time.Since(tl.CurrectTask.ExecutionTime).Nanoseconds()
-				dorm_period := (planned_delta - int(corr)) * int(time.Nanosecond)
+				corr := time.Since(tl.CurrectTask.ExecutionTime)
+				dorm_period := planned_delta - int(corr)
 
 				log.Println(planned_delta, " :: planned delta")
 				log.Println(corr, " :: correction")
