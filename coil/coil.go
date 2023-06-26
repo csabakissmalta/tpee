@@ -193,7 +193,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 	}
 
 	var next *task.Task
-	var testStartTime time.Time = time.Now()
+	// var testStartTime time.Time = time.Now()
 
 	// Start the timer
 	go func() {
