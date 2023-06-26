@@ -215,8 +215,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				// let's get the stopwatch time and compare the difference
 				cmp_time := next.PlannedExecTimeNanos - int(rampupStopwatch.Nanoseconds())
 
-				log.Println("TIMELINE WAIT:: ", dorm_period)
-				log.Println("CORRECTED WAIT:: ", cmp_time)
+				log.Println(dorm_period, " :: TIMELINE WAIT")
+				log.Println(cmp_time, " :: CORRECTED WAIT")
 
 				if dorm_period > cmp_time {
 					time.Sleep(time.Duration(cmp_time))
