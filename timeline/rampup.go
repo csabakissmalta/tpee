@@ -30,6 +30,9 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
 	switch tp {
 	case SINUSOIDAL:
 		pt_val = float64(maxrps) / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
+
+		// pt_val = float64(maxrps) * (math.Acos())
+
 		// pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
 	case LINEAR:
 		pt_val = A * x
@@ -56,6 +59,16 @@ func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count 
 	return result, count
 }
 
+// generates values based on rethought formula: y\ =\ A\frac{1\ +\ \cos\left(\pi\left(\frac{x}{D}-1\right)\right)}{2} (paste to Desmos)
+func generate_intervals_2(t Rampup, dur int, maxrps int) (result []float64, count int) {
+	for i := 1; i < maxrps; i++ {
+		val := 2*float64(dur) - (float64(dur)*(math.Acos(float64((2*float64(i))/float64(maxrps)-1)))+math.Pi)/math.Pi
+		result = append(result, val)
+	}
+
+	return result, maxrps
+}
+
 // This method should provide a timeline
 // with negative timestamps to be executed before the main timeline
 // should take:
@@ -78,6 +91,7 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 
 // The function, returning the values
 func PointsPlannedTimestamps(maxRps int64, t Rampup, dur int) (pts []float64, count int) {
-	pts, count = generate_intervals(t, dur, int(maxRps))
+	// pts, count = generate_intervals(t, dur, int(maxRps))
+	pts, count = generate_intervals_2(t, dur, int(maxRps))
 	return pts, count
 }
