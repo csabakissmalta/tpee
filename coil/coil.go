@@ -210,7 +210,11 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				// if there is rampup, it falls back to compare mode
 				planned_delta := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
 				corr := tl.CurrectTask.ExecutionTime.Sub(testStartTime).Nanoseconds() - int64(tl.CurrectTask.PlannedExecTimeNanos)
-				dorm_period := planned_delta - int(corr)
+				dorm_period := (planned_delta - int(corr)) * int(time.Nanosecond)
+
+				log.Println(planned_delta, " :: planned delta")
+				log.Println(corr, " :: correction")
+				log.Println(dorm_period, " :: dorm period")
 
 				time.Sleep(time.Duration(dorm_period))
 
