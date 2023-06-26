@@ -208,9 +208,9 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			select {
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
-				delta := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
-				corr := tl.CurrectTask.ExecutionTime.Sub(testStartTime).Nanoseconds()
-				dorm_period := delta - int(corr)
+				planned_delta := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
+				corr := tl.CurrectTask.ExecutionTime.Sub(testStartTime).Nanoseconds() - int64(tl.CurrectTask.PlannedExecTimeNanos)
+				dorm_period := planned_delta - int(corr)
 
 				time.Sleep(time.Duration(dorm_period))
 
