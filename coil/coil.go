@@ -210,7 +210,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
 				elapsedTotal := time.Since(testStartTime).Nanoseconds()
-				corr = elapsedTotal - int64(tl.CurrectTask.PlannedExecTimeNanos)
+				corr = elapsedTotal - int64(tl.CurrectTask.PlannedExecTimeNanos)/1000000000
 				planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 				dorm_period := planned_delta - int(corr)
 
