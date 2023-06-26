@@ -193,7 +193,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 	}
 
 	var next *task.Task
-	var testStartTime time.Time = time.Now()
+	// var testStartTime time.Time = time.Now()
 
 	// Start the timer
 	go func() {
@@ -209,7 +209,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
 				planned_delta := (next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos) * int(time.Nanosecond)
-				corr := tl.CurrectTask.ExecutionTime.Nanosecond() - testStartTime.Nanosecond() - tl.CurrectTask.PlannedExecTimeNanos
+				corr := time.Since(tl.CurrectTask.ExecutionTime).Nanoseconds()
 				dorm_period := (planned_delta - int(corr)) * int(time.Nanosecond)
 
 				log.Println(planned_delta, " :: planned delta")
