@@ -1,8 +1,8 @@
 package timeline
 
 import (
-	"log"
 	"math"
+	"sort"
 	"time"
 
 	task "github.com/csabakissmalta/tpee/task"
@@ -25,53 +25,53 @@ var (
 
 // y\ =\ \frac{A}{2}\left(\cos\left(\frac{\pi x}{b}\ -\ \pi\right)+1\right)
 
-// func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
-// 	// sinusoidal increase
-// 	switch tp {
-// 	case SINUSOIDAL:
-// 		pt_val = float64(maxrps) / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
+func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
+	// sinusoidal increase
+	switch tp {
+	case SINUSOIDAL:
+		pt_val = float64(maxrps) / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
 
-// 		// pt_val = float64(maxrps) * (math.Acos())
+		// pt_val = float64(maxrps) * (math.Acos())
 
-// 		// pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
-// 	case LINEAR:
-// 		pt_val = A * x
-// 	}
-// 	return pt_val
-// }
+		// pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
+	case LINEAR:
+		pt_val = A * x
+	}
+	return pt_val
+}
 
-// func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count int) {
-// 	rpss := []float64{}
-// 	for x := 0.0; x < float64(dur); x += 1.0 {
-// 		curr := calc_val(x, t, dur, maxrps)
-// 		rpss = append(rpss, curr)
-// 	}
-// 	sort.Float64s(rpss)
+func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count int) {
+	rpss := []float64{}
+	for x := 0.0; x < float64(dur); x += 1.0 {
+		curr := calc_val(x, t, dur, maxrps)
+		rpss = append(rpss, curr)
+	}
+	sort.Float64s(rpss)
 
-// 	for i := 1; i < len(rpss); i++ {
-// 		for f := 0; f <= int(rpss[i]); f++ {
-// 			microstep := 1.0 / rpss[i]
-// 			result = append(result, float64(i)+float64(f)*microstep)
-// 		}
-// 	}
-// 	count = len(result)
-// 	sort.Float64s(result)
-// 	return result, count
-// }
+	for i := 1; i < len(rpss); i++ {
+		for f := 0; f <= int(rpss[i]); f++ {
+			microstep := 1.0 / rpss[i]
+			result = append(result, float64(i)+float64(f)*microstep)
+		}
+	}
+	count = len(result)
+	sort.Float64s(result)
+	return result, count
+}
 
 // generates values based on rethought formula: y\ =\ A\frac{1\ +\ \cos\left(\pi\left(\frac{x}{D}-1\right)\right)}{2} (paste to Desmos)
-func generate_intervals_2(t Rampup, dur int, maxrps int) (result []float64, count int) {
-	for i := 1; i < maxrps; i++ {
-		// val := 2*float64(dur) - (float64(dur)*(math.Acos(float64((2*float64(i))/float64(maxrps)-1)))+math.Pi)/math.Pi
+// func generate_intervals_2(t Rampup, dur int, maxrps int) (result []float64, count int) {
+// 	for i := 1; i < maxrps; i++ {
+// 		// val := 2*float64(dur) - (float64(dur)*(math.Acos(float64((2*float64(i))/float64(maxrps)-1)))+math.Pi)/math.Pi
 
-		nom := float64(dur) * (math.Acos(2*(float64(i))/float64(maxrps)-1) + math.Pi)
-		val := 2*float64(dur) - (nom / math.Pi)
+// 		nom := float64(dur) * (math.Acos(2*(float64(i))/float64(maxrps)-1) + math.Pi)
+// 		val := 2*float64(dur) - (nom / math.Pi)
 
-		result = append(result, val)
-	}
+// 		result = append(result, val)
+// 	}
 
-	return result, maxrps
-}
+// 	return result, maxrps
+// }
 
 // This method should provide a timeline
 // with negative timestamps to be executed before the main timeline
@@ -84,9 +84,9 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 
 	for _, p := range initPoints {
 		t := int((p+delay)*second) / int(time.Nanosecond)
-		log.Println("------")
-		log.Println("POINT: ", p)
-		log.Println("PLANNED RAMPUP NANO: ", t)
+		// log.Println("------")
+		// log.Println("POINT: ", p)
+		// log.Println("PLANNED RAMPUP NANO: ", t)
 		rampupPts = append(rampupPts, task.New(
 			task.WithPlannedExecTimeNanos(int(t)),
 			task.WithLabel(label),
@@ -98,7 +98,7 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 
 // The function, returning the values
 func PointsPlannedTimestamps(maxRps int64, t Rampup, dur int) (pts []float64, count int) {
-	// pts, count = generate_intervals(t, dur, int(maxRps))
-	pts, count = generate_intervals_2(t, dur, int(maxRps))
+	pts, count = generate_intervals(t, dur, int(maxRps))
+	// pts, count = generate_intervals_2(t, dur, int(maxRps))
 	return pts, count
 }
