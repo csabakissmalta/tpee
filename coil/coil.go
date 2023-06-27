@@ -238,7 +238,6 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 					tl.CurrectTask = next
 				}
 			}
-
 		}
 	}()
 }
