@@ -80,6 +80,8 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 
 	for _, p := range initPoints {
 		t := int((p+delay)*second) / int(time.Nanosecond)
+		log.Println("------")
+		log.Println("POINT: ", p)
 		log.Println("PLANNED RAMPUP NANO: ", t)
 		rampupPts = append(rampupPts, task.New(
 			task.WithPlannedExecTimeNanos(int(t)),
