@@ -62,7 +62,11 @@ var (
 // generates values based on rethought formula: y\ =\ A\frac{1\ +\ \cos\left(\pi\left(\frac{x}{D}-1\right)\right)}{2} (paste to Desmos)
 func generate_intervals_2(t Rampup, dur int, maxrps int) (result []float64, count int) {
 	for i := 1; i < maxrps; i++ {
-		val := 2*float64(dur) - (float64(dur)*(math.Acos(float64((2*float64(i))/float64(maxrps)-1)))+math.Pi)/math.Pi
+		// val := 2*float64(dur) - (float64(dur)*(math.Acos(float64((2*float64(i))/float64(maxrps)-1)))+math.Pi)/math.Pi
+
+		nom := float64(dur) * (math.Acos(2*(float64(i))/float64(maxrps)-1) + math.Pi)
+		val := 2*float64(dur) - (nom / math.Pi)
+
 		result = append(result, val)
 	}
 
