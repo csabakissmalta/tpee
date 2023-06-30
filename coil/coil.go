@@ -213,6 +213,9 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				corr = elapsedTotal - int64(tl.CurrectTask.PlannedExecTimeNanos)
 				planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 				dorm_period := planned_delta - int(corr)
+				if dorm_period < 0 {
+					dorm_period = 0
+				}
 
 				// log.Println(elapsedTotal, " :: elapsed total")
 				// log.Println(planned_delta, " :: planned delta")
