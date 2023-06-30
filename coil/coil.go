@@ -217,16 +217,14 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 					dorm_period = 0
 				}
 
-				// log.Println(elapsedTotal, " :: elapsed total")
-				// log.Println(planned_delta, " :: planned delta")
-				// log.Println(corr, " :: correction")
-				// log.Println(dorm_period, " :: dorm period")
+				time.Sleep(time.Duration(dorm_period))
 
 				// compose/execute task here
 				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
-				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
+				go func() {
+					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
+				}()
 				tl.CurrectTask = next
-				time.Sleep(time.Duration(dorm_period))
 
 				// rampupStopwatch = time.Since(testStartTime)
 			default:
