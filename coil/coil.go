@@ -214,10 +214,10 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 				dorm_period := planned_delta - int(corr)
 
-				log.Println(elapsedTotal, " :: elapsed total")
-				log.Println(planned_delta, " :: planned delta")
-				log.Println(corr, " :: correction")
-				log.Println(dorm_period, " :: dorm period")
+				// log.Println(elapsedTotal, " :: elapsed total")
+				// log.Println(planned_delta, " :: planned delta")
+				// log.Println(corr, " :: correction")
+				// log.Println(dorm_period, " :: dorm period")
 
 				// compose/execute task here
 				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)

@@ -2,7 +2,6 @@ package request
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -99,12 +98,12 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		env_var_replace_string = elem.(string)
 		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
 
-		log.Println("************************")
-		log.Println("*** DATASTORE_IN:", datasource_in)
-		log.Println("*** ELEM:", elem)
-		log.Println("*** IN:", *in)
-		log.Println("*** OUT:", out)
-		log.Println("************************")
+		// log.Println("************************")
+		// log.Println("*** DATASTORE_IN:", datasource_in)
+		// log.Println("*** ELEM:", elem)
+		// log.Println("*** IN:", *in)
+		// log.Println("*** OUT:", out)
+		// log.Println("************************")
 
 		return out, nil
 	}
