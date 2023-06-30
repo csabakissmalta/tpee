@@ -220,10 +220,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				time.Sleep(time.Duration(dorm_period))
 
 				// compose/execute task here
-				go func() {
-					_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
-					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
-				}()
+				_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
+				next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 				tl.CurrectTask = next
 
 				// rampupStopwatch = time.Since(testStartTime)
