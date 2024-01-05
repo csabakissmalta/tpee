@@ -18,7 +18,7 @@ type NATSClient struct {
 	CredsPath string
 
 	// connection
-	conn *nats.Conn
+	Conn *nats.Conn
 }
 
 // option type
@@ -86,20 +86,20 @@ func (ncl *NATSClient) connectAndReadyToPublish() error {
 	if err != nil {
 		return err
 	}
-	ncl.conn = nc
+	ncl.Conn = nc
 	return nil
 }
 
 // Publish message
 func (ncl *NATSClient) Publish(subj string, raw_msg []byte) error {
-	if ncl.conn != nil {
-		return ncl.conn.Publish(subj, raw_msg)
+	if ncl.Conn != nil {
+		return ncl.Conn.Publish(subj, raw_msg)
 	} else {
 		err := ncl.connectAndReadyToPublish()
 		if err != nil {
 			return err
 		} else {
-			return ncl.conn.Publish(subj, raw_msg)
+			return ncl.Conn.Publish(subj, raw_msg)
 		}
 	}
 }
