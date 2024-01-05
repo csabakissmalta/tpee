@@ -9,6 +9,7 @@ import (
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
 	task "github.com/csabakissmalta/tpee/task"
+	"github.com/nats-io/nats.go"
 )
 
 type Timeline struct {
@@ -78,7 +79,7 @@ func New(option ...Option) *Timeline {
 	return tl
 }
 
-func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup, subs map[string]chan interface{}) {
+func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup, subs map[string]chan *nats.Msg) {
 	// populate rampup period if set
 	if rmp != nil {
 		if rmp != nil {

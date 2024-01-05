@@ -12,14 +12,16 @@ import (
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
 	task "github.com/csabakissmalta/tpee/task"
+	"github.com/nats-io/nats.go"
 )
 
 var r = regexp.MustCompile(`[\{]{2}(.{1,32})[\}]{2}`)
 
 type Feed struct {
-	Name  string
-	Value chan interface{}
-	Type  string
+	Name      string
+	Value     chan interface{}
+	Type      string
+	NATSValue chan *nats.Msg
 }
 
 func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
@@ -118,7 +120,7 @@ func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) (bool,
 	return false, ""
 }
 
-func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs map[string]chan interface{}) []*Feed {
+func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs map[string]chan *nats.Msg) []*Feed {
 	fds := []*Feed{}
 	for _, envElem := range env {
 		if *envElem.Type == execconf.FEED_VALUE {
@@ -127,9 +129,9 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs m
 				// that means, it is a NATS subscription
 				ch_item := envElem.Key
 				fd = &Feed{
-					Name:  ch_item,
-					Value: subs[ch_item],
-					Type:  "nats_msg",
+					Name:      ch_item,
+					NATSValue: subs[ch_item],
+					Type:      "nats_msg",
 				}
 			}
 			fds = append(fds, fd)
