@@ -34,6 +34,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	f_name = f_name[:len(f_name)-1]
 	f_extension_raw := strings.Split(f_name, ".")
 	f_extension := f_extension_raw[len(f_extension_raw)-1]
+	log.Println(":::EXTENSION :::", f_extension)
 	switch f_extension {
 	case "csv":
 		// var rec_index int
@@ -75,6 +76,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	case "nats":
 		// setting up nats client channel consumes needs to be added here
 		// -----
+		log.Println(":::EXTENSION NATS :::", f_extension)
 		return nil
 	case "json":
 	case "txt":
