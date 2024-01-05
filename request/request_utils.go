@@ -61,13 +61,14 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			log.Println("NATS FEED :::")
 
 			nch := selectedFeed.NATSValue
+			log.Println("NATS FEED CHANNEL :::", nch)
 			elem := <-nch
 			log.Println("NATS FEED ELEM :::", string(elem.Data))
 
 			env_var_replace_string = string(elem.Data)
 			// log.Println(env_var_replace_string)
 			out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
-			ch <- elem
+			nch <- elem
 			return out, nil
 		} else {
 			ch = selectedFeed.Value
