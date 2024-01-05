@@ -129,7 +129,8 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs m
 			if fd == nil {
 				// that means, it is a NATS subscription
 				ch_item := envElem.Key
-				log.Println("::: ENV ELEM KEY ::: ", ch_item, subs[ch_item])
+				tester := <-subs[ch_item]
+				log.Println("::: ENV ELEM KEY ::: ", ch_item, tester.Subject)
 				fd = &Feed{
 					Name:      ch_item,
 					NATSValue: subs[ch_item],
