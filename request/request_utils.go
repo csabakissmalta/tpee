@@ -2,6 +2,7 @@ package request
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -57,8 +58,11 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		}
 
 		if selectedFeed.Type == "nats_msg" {
+			log.Println("NATS FEED :::")
+
 			nch := selectedFeed.NATSValue
 			elem := <-nch
+			log.Println("NATS FEED ELEM :::", string(elem.Data))
 
 			env_var_replace_string = string(elem.Data)
 			// log.Println(env_var_replace_string)
