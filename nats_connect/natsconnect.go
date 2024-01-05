@@ -65,7 +65,7 @@ func (ncl *NATSClient) ConnectAndSubscribe() (map[string]chan *nats.Msg, error) 
 	if err != nil {
 		return nil, err
 	}
-	channels := map[string]chan *nats.Msg{}
+	channels := make(map[string]chan *nats.Msg, len(ncl.Subjects))
 	// now subscribe
 	for _, sbj := range ncl.Subjects {
 		subs_chan := make(chan *nats.Msg)
