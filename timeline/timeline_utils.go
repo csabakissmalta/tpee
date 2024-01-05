@@ -32,7 +32,8 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	// determine feed file type and load the file accordingly
 	f_name := strings.Split(e.Value, "|")[1]
 	f_name = f_name[:len(f_name)-1]
-	f_extension := strings.Split(f_name, ".")[1]
+	f_extension_raw := strings.Split(f_name, ".")
+	f_extension := f_extension_raw[len(f_extension_raw)-1]
 	switch f_extension {
 	case "csv":
 		// var rec_index int
@@ -129,15 +130,15 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs m
 			if fd == nil {
 				// that means, it is a NATS subscription
 				ch_item := envElem.Key
-				tester := <-subs[ch_item]
-				log.Println("::: ENV ELEM KEY ::: ", ch_item, tester.Subject)
 				fd = &Feed{
 					Name:      ch_item,
 					NATSValue: subs[ch_item],
 					Type:      "nats_msg",
 				}
+				fds = append(fds, fd)
+			} else {
+				fds = append(fds, fd)
 			}
-			fds = append(fds, fd)
 		}
 	}
 	return fds

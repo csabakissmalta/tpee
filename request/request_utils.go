@@ -57,6 +57,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 		}
 
+		log.Println("::: FEED TYPE :::", selectedFeed.Type)
 		if selectedFeed.Type == "nats_msg" {
 			log.Println("NATS FEED :::")
 
