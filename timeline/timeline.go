@@ -78,7 +78,7 @@ func New(option ...Option) *Timeline {
 	return tl
 }
 
-func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup) {
+func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnvironmentElem, rmp *execconf.ExecRampup, subs map[string]chan interface{}) {
 	// populate rampup period if set
 	if rmp != nil {
 		if rmp != nil {
@@ -92,7 +92,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 	// check env elements and load feeds if there is any feedValue type
 	timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks) + 1000
-	t.Feeds = load_feeds_if_required(timeline_dimension, env)
+	t.Feeds = load_feeds_if_required(timeline_dimension, env, subs)
 
 	// The step between the markers
 	second := time.Second

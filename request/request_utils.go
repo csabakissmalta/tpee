@@ -10,6 +10,7 @@ import (
 	execconf "github.com/csabakissmalta/tpee/exec"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 	timeline "github.com/csabakissmalta/tpee/timeline"
+	"github.com/nats-io/nats.go"
 )
 
 // func generate_auth_header_value() string {
@@ -48,24 +49,39 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 				}
 			}
 		}
+		var selectedFeed *timeline.Feed
 		for _, feed := range fds {
 			if feed_varname == feed.Name {
-				ch = feed.Value
+				selectedFeed = feed
 				break
 			}
 		}
-		elem := <-ch
-		fmt.Printf(":: Conversion: %v", elem)
-		elem_map, ok := elem.(map[string]string)
-		if !ok {
-			return "", fmt.Errorf("conversion error: %v, %v", elem_map, elem)
-		}
+		ch = selectedFeed.Value
 
-		env_var_replace_string = elem_map[feed_varname]
-		// log.Println(env_var_replace_string)
-		out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
-		ch <- elem
-		return out, nil
+		if selectedFeed.Type == "nats_msg" {
+			elem := <-ch
+			elem_map, ok := elem.(nats.Msg)
+			if !ok {
+				return "", fmt.Errorf("conversion error: %v, %v", elem_map, elem)
+			}
+			env_var_replace_string = string(elem_map.Data)
+			// log.Println(env_var_replace_string)
+			out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
+			ch <- elem
+			return out, nil
+		} else {
+			elem := <-ch
+			fmt.Printf(":: Conversion: %v", elem)
+			elem_map, ok := elem.(map[string]string)
+			if !ok {
+				return "", fmt.Errorf("conversion error: %v, %v", elem_map, elem)
+			}
+			env_var_replace_string = elem_map[feed_varname]
+			// log.Println(env_var_replace_string)
+			out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)
+			ch <- elem
+			return out, nil
+		}
 	}
 
 	// check DATA var match

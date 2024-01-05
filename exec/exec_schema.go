@@ -55,6 +55,10 @@ type Exec struct {
 	// Test duration in seconds
 	DurationSeconds int `json:"duration-seconds"`
 
+	// Settings, how to connect and subscribe on the NATS server to receive messages
+	// as feeds.
+	NatsConnection *ExecSchemaJsonNatsConnection `json:"nats-connection,omitempty" yaml:"nats-connection,omitempty" mapstructure:"nats-connection,omitempty"`
+
 	// Key/value pairs, defined for the test runtime.
 	Environment []*ExecEnvironmentElem `json:"environment,omitempty"`
 
@@ -178,6 +182,22 @@ func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) err
 	}
 	*j = ExecRequestsElemDataPersistenceDataOutElem(plain)
 	return nil
+}
+
+// Settings, how to connect and subscribe on the NATS server to receive messages as
+// feeds.
+type ExecSchemaJsonNatsConnection struct {
+	// The connection to the NATS server (via nats:// protocol, deafult port: 4222)
+	NatsUrl *string `json:"nats-url,omitempty" yaml:"nats-url,omitempty" mapstructure:"nats-url,omitempty"`
+
+	// Subject and/or stream names with the correct hierarchy paths.
+	Subscription []string `json:"subscription,omitempty" yaml:"subscription,omitempty" mapstructure:"subscription,omitempty"`
+
+	// The client can subscribe to a subject or a stream.
+	SubscriptionType *string `json:"subscription-type,omitempty" yaml:"subscription-type,omitempty" mapstructure:"subscription-type,omitempty"`
+
+	// For authentication on the server, an auth creds file is required.
+	UserCredsFilePath *string `json:"user-creds-file-path,omitempty" yaml:"user-creds-file-path,omitempty" mapstructure:"user-creds-file-path,omitempty"`
 }
 
 type ExecEnvironmentElem struct {

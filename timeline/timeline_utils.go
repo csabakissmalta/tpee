@@ -8,7 +8,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
@@ -20,6 +19,7 @@ var r = regexp.MustCompile(`[\{]{2}(.{1,32})[\}]{2}`)
 type Feed struct {
 	Name  string
 	Value chan interface{}
+	Type  string
 }
 
 func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
@@ -34,6 +34,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	switch f_extension {
 	case "csv":
 		// var rec_index int
+		f.Type = "csv"
 		file, err := os.Open(f_name)
 		if err != nil {
 			log.Fatalf("DATA READ ERROR: cannot open feed file %s. %s", f_name, err.Error())
@@ -47,7 +48,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 
 		// shuffle the feed records - they tend to be ordered in some way
 		rec = rec[1:]
-		rand.Seed(time.Now().UnixNano())
+		// rand.Seed(time.Now().UnixNano())
 		rand.Shuffle(len(rec), func(i, j int) {
 			rec[i], rec[j] = rec[j], rec[i]
 		})
@@ -68,6 +69,10 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 				i = 0
 			}
 		}
+	case "nats":
+		// setting up nats client channel consumes needs to be added here
+		// -----
+		return nil
 	case "json":
 	case "txt":
 	default:
@@ -113,11 +118,20 @@ func check_env_var_set(vname string, env []*execconf.ExecEnvironmentElem) (bool,
 	return false, ""
 }
 
-func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem) []*Feed {
+func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs map[string]chan interface{}) []*Feed {
 	fds := []*Feed{}
 	for _, envElem := range env {
 		if *envElem.Type == execconf.FEED_VALUE {
 			fd := load_feed(dim, envElem)
+			if fd == nil {
+				// that means, it is a NATS subscription
+				ch_item := envElem.Key
+				fd = &Feed{
+					Name:  ch_item,
+					Value: subs[ch_item],
+					Type:  "nats_msg",
+				}
+			}
 			fds = append(fds, fd)
 		}
 	}

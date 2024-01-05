@@ -10,6 +10,7 @@ import (
 
 	datastore "github.com/csabakissmalta/tpee/datastore"
 	execconf "github.com/csabakissmalta/tpee/exec"
+	natsconnect "github.com/csabakissmalta/tpee/nats_connect"
 	request "github.com/csabakissmalta/tpee/request"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 	task "github.com/csabakissmalta/tpee/task"
@@ -28,6 +29,7 @@ const (
 var SESSION_STORE_CAPACITY int = sessionstore.STORE_CAPACITY
 
 type Coil struct {
+	NATSClient              *natsconnect.NATSClient
 	Ctx                     context.Context
 	Timelines               []*timeline.Timeline
 	EnvVars                 []*execconf.ExecEnvironmentElem
@@ -66,6 +68,12 @@ func WithResultsReportingChannel(ch chan *task.Task) Option {
 func WithExecutionMode(em string) Option {
 	return func(c *Coil) {
 		c.ExecutionMode = em
+	}
+}
+
+func WithNATSClient(nc *natsconnect.NATSClient) Option {
+	return func(c *Coil) {
+		c.NATSClient = nc
 	}
 }
 
