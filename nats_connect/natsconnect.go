@@ -69,9 +69,12 @@ func (ncl *NATSClient) ConnectAndSubscribe() (map[string]chan *nats.Msg, error) 
 	// now subscribe
 	for _, sbj := range ncl.Subjects {
 		subs_chan := make(chan *nats.Msg)
-		_, err := nc.ChanSubscribe(sbj, subs_chan)
+		sub, err := nc.ChanSubscribe(sbj, subs_chan)
 		if err != nil {
 			log.Fatal("ERR: NATS subscription issue: ", err.Error())
+		}
+		if err := sub.SetPendingLimits(1024*500, 1024*5000); err != nil {
+			log.Fatalf("Unable to set pending limits: %v", err)
 		}
 		channels[sbj] = subs_chan
 	}
