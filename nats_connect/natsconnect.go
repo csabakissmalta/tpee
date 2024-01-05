@@ -60,24 +60,24 @@ func WithCredsFilePath(cfp string) Option {
 // -------------------- SUBSCRIBE ----------------------
 
 // Connect to the NATS server and subscribe to the subjects
-func (ncl *NATSClient) ConnectAndSubscribe() (map[string]chan *nats.Msg, error) {
+func (ncl *NATSClient) ConnectAndSubscribe(subs_chan []chan *nats.Msg) (map[string]*nats.Subscription, error) {
 	nc, err := nats.Connect(ncl.ConnectionUrl, nats.UserCredentials(ncl.CredsPath))
 	if err != nil {
 		return nil, err
 	}
-	channels := make(map[string]chan *nats.Msg, len(ncl.Subjects))
+	channels := make(map[string]*nats.Subscription, len(ncl.Subjects))
 	// now subscribe
-	for _, sbj := range ncl.Subjects {
-		subs_chan := make(chan *nats.Msg)
-		// sub, err := nc.ChanSubscribe(sbj, subs_chan)
-		_, err := nc.QueueSubscribeSyncWithChan(sbj, "plab", subs_chan)
+	for idx, sbj := range ncl.Subjects {
+		// subs_chan := make(chan *nats.Msg)
+		sub, err := nc.ChanSubscribe(sbj, subs_chan[idx])
+		// _, err := nc.QueueSubscribeSyncWithChan(sbj, "plab", subs_chan)
 		if err != nil {
 			log.Fatal("ERR: NATS subscription issue: ", err.Error())
 		}
 		// if err = sub.SetPendingLimits(1024*500, 1024*5000); err != nil {
 		// 	log.Fatalf("Unable to set pending limits: %v", err)
 		// }
-		channels[sbj] = subs_chan
+		channels[sbj] = sub
 	}
 	return channels, nil
 }
