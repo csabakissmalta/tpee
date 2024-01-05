@@ -60,6 +60,16 @@ func WithCredsFilePath(cfp string) Option {
 // -------------------- SUBSCRIBE ----------------------
 
 // Connect to the NATS server and subscribe to the subjects
+func (ncl *NATSClient) Connect() error {
+	nc, err := nats.Connect(ncl.ConnectionUrl, nats.UserCredentials(ncl.CredsPath))
+	if err != nil {
+		return err
+	}
+	ncl.Conn = nc
+	return nil
+}
+
+// Connect to the NATS server and subscribe to the subjects
 func (ncl *NATSClient) ConnectAndSubscribe(subs_chan map[string]chan *nats.Msg) (map[string]chan *nats.Msg, error) {
 	nc, err := nats.Connect(ncl.ConnectionUrl, nats.UserCredentials(ncl.CredsPath))
 	if err != nil {
