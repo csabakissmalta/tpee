@@ -77,7 +77,8 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 		// setting up nats client channel consumes needs to be added here
 		// -----
 		log.Println(":::EXTENSION NATS :::", f_extension)
-		return nil
+		f.Type = "nats_msg"
+		return f
 	case "json":
 	case "txt":
 	default:
@@ -129,14 +130,11 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs m
 		if *envElem.Type == execconf.FEED_VALUE {
 			fd := load_feed(dim, envElem)
 
-			if fd == nil {
+			if fd.Type == "nats_msg" {
 				// that means, it is a NATS subscription
 				ch_item := envElem.Key
-				fd = &Feed{
-					Name:      ch_item,
-					NATSValue: subs[ch_item],
-					Type:      "nats_msg",
-				}
+				fd.Name = ch_item
+				fd.NATSValue = subs[ch_item]
 				fds = append(fds, fd)
 			} else {
 				fds = append(fds, fd)
