@@ -28,12 +28,11 @@ func whichDataStore(name string, dp []*execconf.ExecRequestsElemDataPersistenceD
 }
 
 func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Session, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) (string, error) {
-	log.Println("------- FEED CHECK -------")
-	log.Println("------- request_utils.validate_and_substitute -------")
-
 	match_feed := r_var.FindStringSubmatch(*in)
 	match_data_in_storage := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
+
+	log.Println("------- FEED CHECK -------", match_feed)
 
 	var ch chan interface{}
 	var feed_varname string
@@ -43,7 +42,10 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check FEED var match
 	if len(match_feed) > 0 {
+		log.Println("------- check FEED var match -------", len(match_feed))
+
 		for i, name := range r_var.SubexpNames() {
+			log.Println("------- r_var.SubexpNames() -------", r_var.SubexpNames())
 			if i > 0 && i <= len(match_feed) {
 				if name == "FEED_VAR" {
 					feed_varname = match_feed[i]
@@ -78,7 +80,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			nch <- elem
 			return out, nil
 		} else {
-			ch = selectedFeed.Value
+			ch := selectedFeed.Value
 			elem := <-ch
 			fmt.Printf(":: Conversion: %v", elem)
 			elem_map, ok := elem.(map[string]string)
