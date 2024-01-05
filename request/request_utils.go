@@ -2,7 +2,6 @@ package request
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -32,8 +31,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 	match_data_in_storage := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
 
-	log.Println("------- FEED CHECK -------", match_feed)
-
 	var ch chan interface{}
 	var feed_varname string
 	var sessionvar_name string
@@ -42,10 +39,7 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 
 	// check FEED var match
 	if len(match_feed) > 0 {
-		log.Println("------- check FEED var match -------", len(match_feed))
-
 		for i, name := range r_var.SubexpNames() {
-			log.Println("------- r_var.SubexpNames() -------", r_var.SubexpNames())
 			if i > 0 && i <= len(match_feed) {
 				if name == "FEED_VAR" {
 					feed_varname = match_feed[i]
@@ -56,7 +50,6 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		}
 		var selectedFeed *timeline.Feed
 		for _, feed := range fds {
-			log.Println("FEED NAME :::", feed.Name)
 			if feed_varname == feed.Name {
 
 				selectedFeed = feed
@@ -64,16 +57,9 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 			}
 		}
 
-		log.Println("FEED TYPE :::", selectedFeed.Type)
-
 		if selectedFeed.Type == "nats_msg" {
-			log.Println("NATS FEED :::")
-
 			nch := selectedFeed.NATSValue
-			log.Println("NATS FEED CHANNEL :::", nch)
 			elem := <-nch
-			log.Println("NATS FEED ELEM :::", string(elem.Data))
-
 			env_var_replace_string = string(elem.Data)
 			// log.Println(env_var_replace_string)
 			out := strings.Replace(*in, env_var_to_replace, env_var_replace_string, -1)

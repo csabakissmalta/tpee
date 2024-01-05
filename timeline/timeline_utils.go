@@ -34,7 +34,6 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	f_name = f_name[:len(f_name)-1]
 	f_extension_raw := strings.Split(f_name, ".")
 	f_extension := f_extension_raw[len(f_extension_raw)-1]
-	log.Println(":::EXTENSION :::", f_extension)
 	switch f_extension {
 	case "csv":
 		// var rec_index int
@@ -76,7 +75,6 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	case "nats":
 		// setting up nats client channel consumes needs to be added here
 		// -----
-		log.Println(":::EXTENSION NATS :::", f_extension)
 		f.Type = "nats_msg"
 		return f
 	case "json":
@@ -145,7 +143,6 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs m
 }
 
 func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) (string, error) {
-	log.Println("timeline_utils.validate_and_substitute", src)
 	match := rgx.FindAllStringSubmatch(src, -1)
 	var rpl string = src
 	if len(match) > 0 {
@@ -155,7 +152,6 @@ func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.Exe
 				return "", fmt.Errorf("%s env variable for URL: %s is not set", mtch[1], src)
 			}
 			rpl = strings.Replace(rpl, mtch[0], val, -1)
-			log.Println("REPLACED: ", rpl)
 		}
 		return rpl, nil
 	}

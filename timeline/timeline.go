@@ -3,7 +3,6 @@
 package timeline
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -95,8 +94,6 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 	// check env elements and load feeds if there is any feedValue type
 	timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks) + 1000
 	t.Feeds = load_feeds_if_required(timeline_dimension, env, subs)
-
-	log.Println(">>> FEEDS: ", t.Feeds, len(t.Feeds))
 
 	// The step between the markers
 	second := time.Second
