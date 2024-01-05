@@ -24,7 +24,7 @@ import (
 
 // --------------- REGEXP DEFINITIONS ---------------
 // Regex to get the substitution variable name (max length 30 characters)
-var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>[a-z0-9-_]{1,30})[|]{1}.+[\+])`)
+var r = regexp.MustCompile(`(?P<WHOLE>[\+]{1}(?P<FEED_VAR>[a-z0-9-_\.]{1,30})[|]{1}.+[\+])`)
 
 // Regex to get the substitution variable for the datastore
 var rds = regexp.MustCompile(`(?P<WHOLE>[\<]{1}(?P<CHAN>[a-z0-9\-_]{1,30})[\>]{1})`)
