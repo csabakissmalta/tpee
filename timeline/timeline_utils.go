@@ -147,6 +147,7 @@ func load_feeds_if_required(dim int, env []*execconf.ExecEnvironmentElem, subs m
 }
 
 func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.ExecEnvironmentElem) (string, error) {
+	log.Println("timeline_utils.validate_and_substitute", src)
 	match := rgx.FindAllStringSubmatch(src, -1)
 	var rpl string = src
 	if len(match) > 0 {
@@ -156,7 +157,7 @@ func validate_and_substitute(src string, rgx *regexp.Regexp, env []*execconf.Exe
 				return "", fmt.Errorf("%s env variable for URL: %s is not set", mtch[1], src)
 			}
 			rpl = strings.Replace(rpl, mtch[0], val, -1)
-			// log.Println(rpl)
+			log.Println("REPLACED: ", rpl)
 		}
 		return rpl, nil
 	}

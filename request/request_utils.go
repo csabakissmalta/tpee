@@ -28,6 +28,9 @@ func whichDataStore(name string, dp []*execconf.ExecRequestsElemDataPersistenceD
 }
 
 func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Regexp, r_ss *regexp.Regexp, fds []*timeline.Feed, ds *datastore.DataBroadcaster, ss *sessionstore.Session, dp []*execconf.ExecRequestsElemDataPersistenceDataInElem) (string, error) {
+	log.Println("------- FEED CHECK -------")
+	log.Println("------- request_utils.validate_and_substitute -------")
+
 	match_feed := r_var.FindStringSubmatch(*in)
 	match_data_in_storage := r_ds.FindStringSubmatch(*in)
 	match_session := r_ss.FindAllStringSubmatch(*in, -1)
