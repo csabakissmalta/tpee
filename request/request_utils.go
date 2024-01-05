@@ -51,11 +51,15 @@ func validate_and_substitute(in *string, r_var *regexp.Regexp, r_ds *regexp.Rege
 		}
 		var selectedFeed *timeline.Feed
 		for _, feed := range fds {
+			log.Println("FEED NAME :::", feed.Name)
 			if feed_varname == feed.Name {
+
 				selectedFeed = feed
 				break
 			}
 		}
+
+		log.Println("FEED TYPE :::", selectedFeed.Type)
 
 		if selectedFeed.Type == "nats_msg" {
 			log.Println("NATS FEED :::")
