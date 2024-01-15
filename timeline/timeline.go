@@ -139,13 +139,16 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	// The step between the markers
 	second := time.Second
 	convers := int(second / time.Nanosecond)
-	step := int(convers / t.Rules.Frequency)
+	step := int(convers / tr.TargetRate)
 
 	// Set the step duration for the timeline as well
 	t.StepDuration = step
 
 	// Create time markers - empty tasks
 	t.Tasks = calc_periods(dur, step, t.Rules, t.RequestBlueprint)
+
+	// re-set the config rules
+	t.Rules.Frequency = tr.TargetRate
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
