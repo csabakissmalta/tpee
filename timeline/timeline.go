@@ -45,6 +45,19 @@ type Timeline struct {
 	StepDuration int
 }
 
+// rate change delta
+type Transition struct {
+	// target rate
+	TargetRate int
+
+	// rampup to achieve the changed trate
+	// this is identical with the rampup seconds
+	TransitionRampupTimeSeconds int
+
+	// rampup type - so far sinisoidal implemented only
+	RampupType string
+}
+
 type Option func(*Timeline)
 
 func WithRules(rls *execconf.ExecRequestsElem) Option {
@@ -83,7 +96,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 	// populate rampup period if set
 	if rmp != nil {
 		if rmp != nil {
-			rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
+			rmp_points := t.GenerateRampUpTimeline(int64(*rmp.DurationSeconds), 0, int64(t.Rules.Frequency), float64(t.Rules.DelaySeconds), Rampup(*rmp.RampupType), t.Rules.Name)
 			t.RampupTasks = make(chan *task.Task, len(rmp_points))
 			for _, p := range rmp_points {
 				t.RampupTasks <- p
@@ -108,6 +121,31 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 	// set the resulting postman request
 	t.RequestBlueprint = r
+}
+
+// repopulate
+func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time.Time) {
+	rmp_points := t.GenerateRampUpTimeline(int64(tr.TransitionRampupTimeSeconds), int64(t.Rules.Frequency), int64(tr.TargetRate), 0.0, Rampup(tr.RampupType), t.Rules.Name)
+	t.RampupTasks = make(chan *task.Task, len(rmp_points))
+	for _, p := range rmp_points {
+		t.RampupTasks <- p
+	}
+
+	// check env elements and load feeds if there is any feedValue type
+	elapsed := time.Since(start_time)
+	dur := int(elapsed.Seconds())
+	// timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks) + 1000
+
+	// The step between the markers
+	second := time.Second
+	convers := int(second / time.Nanosecond)
+	step := int(convers / t.Rules.Frequency)
+
+	// Set the step duration for the timeline as well
+	t.StepDuration = step
+
+	// Create time markers - empty tasks
+	t.Tasks = calc_periods(dur, step, t.Rules, t.RequestBlueprint)
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {

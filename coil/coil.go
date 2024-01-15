@@ -37,6 +37,8 @@ type Coil struct {
 	SessionStore            *sessionstore.Store
 	ResultsReportingChannel chan *task.Task
 	ExecutionMode           string
+	ConsumeClock            *time.Ticker
+	StartTime               time.Time
 }
 
 type Option func(*Coil)
@@ -193,7 +195,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 
 func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// Set the timer with the duration of the step size
-	engine_ticker := *time.NewTicker(time.Duration(tl.StepDuration * int(time.Nanosecond)))
+	c.ConsumeClock = time.NewTicker(time.Duration(tl.StepDuration * int(time.Nanosecond)))
 	done := make(chan bool)
 
 	if tl.Rules.DelaySeconds > 0 {
@@ -202,7 +204,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 	var next *task.Task
 	var corr int64
-	var testStartTime time.Time = time.Now()
+	c.StartTime = time.Now()
 
 	// Start the timer
 	go func() {
@@ -217,7 +219,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			select {
 			case next = <-tl.RampupTasks:
 				// if there is rampup, it falls back to compare mode
-				elapsedTotal := time.Since(testStartTime).Nanoseconds()
+				elapsedTotal := time.Since(c.StartTime).Nanoseconds()
 				corr = elapsedTotal - int64(tl.CurrectTask.PlannedExecTimeNanos)
 				planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 				dorm_period := planned_delta - int(corr)
@@ -237,7 +239,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				select {
 				case <-done:
 					return
-				case <-engine_ticker.C:
+				case <-c.ConsumeClock.C:
 					// compose/execute task here
 					next = <-tl.Tasks
 					_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
@@ -247,4 +249,22 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 			}
 		}
 	}()
+}
+
+// --- NATS implementation for modifying traffic rate ---
+func (c *Coil) UpdateTrafficRateFromNATSKVUpdate(tl_name string, tr *timeline.Transition, orig_tl_dur int) error {
+	// impl
+	var tln *timeline.Timeline
+
+	// filter the timeline we need to change the rate
+	for _, tl := range c.Timelines {
+		if tl.Name == tl_name {
+			tln = tl
+			break
+		}
+	}
+
+	go tln.Repopulate(tr, orig_tl_dur, c.StartTime)
+
+	return nil
 }

@@ -40,9 +40,9 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
 	return pt_val
 }
 
-func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count int) {
+func generate_intervals(t Rampup, dur int, initrps int, maxrps int) (result []float64, count int) {
 	rpss := []float64{}
-	for x := 0.0; x < float64(dur); x += 1.0 {
+	for x := float64(initrps); x < float64(dur); x += 1.0 {
 		curr := calc_val(x, t, dur, maxrps)
 		rpss = append(rpss, curr)
 	}
@@ -77,8 +77,8 @@ func generate_intervals(t Rampup, dur int, maxrps int) (result []float64, count 
 // with negative timestamps to be executed before the main timeline
 // should take:
 // time length and the rate of what the plan supposed to reach and the generator function.
-func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float64, t Rampup, label string) (rampupPts []*task.Task) {
-	initPoints, c := PointsPlannedTimestamps(targetRPS, t, int(l))
+func (tl *Timeline) GenerateRampUpTimeline(l int64, initrps int64, targetRPS int64, delay float64, t Rampup, label string) (rampupPts []*task.Task) {
+	initPoints, c := PointsPlannedTimestamps(initrps, targetRPS, t, int(l))
 	second := float64(time.Second)
 	tl.RamUpCallsCount = c
 
@@ -97,8 +97,8 @@ func (tl *Timeline) GenerateRampUpTimeline(l int64, targetRPS int64, delay float
 }
 
 // The function, returning the values
-func PointsPlannedTimestamps(maxRps int64, t Rampup, dur int) (pts []float64, count int) {
-	pts, count = generate_intervals(t, dur, int(maxRps))
+func PointsPlannedTimestamps(initRps int64, maxRps int64, t Rampup, dur int) (pts []float64, count int) {
+	pts, count = generate_intervals(t, dur, int(initRps), int(maxRps))
 	// pts, count = generate_intervals_2(t, dur, int(maxRps))
 	return pts, count
 }
