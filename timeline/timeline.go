@@ -149,14 +149,17 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 
 	new_tasks := calc_periods(dur, step, t.Rules, t.RequestBlueprint)
 
+	ch_to_empty := t.Tasks
+
 	t.Tasks = new_tasks
 	ticker.Reset(time.Duration(step))
 
 L:
 	for {
 		select {
-		case <-t.Tasks:
+		case <-ch_to_empty:
 		default:
+			close(ch_to_empty)
 			break L
 		}
 	}
