@@ -125,7 +125,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 
 // repopulate
 func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time.Time) {
-	rmp_points := t.GenerateRampUpTimeline(int64(tr.TransitionRampupTimeSeconds), int64(t.Rules.Frequency), int64(tr.TargetRate), 0.0, Rampup(tr.RampupType), t.Rules.Name)
+	rmp_points := t.GenerateRampUpTimeline(int64(tr.TransitionRampupTimeSeconds), int64(t.Rules.Frequency), int64(tr.TargetRate), float64(time.Since(start_time).Seconds()), Rampup(tr.RampupType), t.Rules.Name)
 	t.RampupTasks = make(chan *task.Task, len(rmp_points))
 	for _, p := range rmp_points {
 		t.RampupTasks <- p
