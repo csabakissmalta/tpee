@@ -25,11 +25,11 @@ var (
 
 // y\ =\ \frac{A}{2}\left(\cos\left(\frac{\pi x}{b}\ -\ \pi\right)+1\right)
 
-func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
+func calc_val(x float64, tp Rampup, dur int, maxrps int, initrps int) (pt_val float64) {
 	// sinusoidal increase
 	switch tp {
 	case SINUSOIDAL:
-		pt_val = float64(maxrps) / 2 * (math.Cos((math.Pi*x)/float64(dur)-math.Pi) + 1)
+		pt_val = float64(maxrps-initrps)/2*(math.Cos((math.Pi*x)/float64(dur)-math.Pi)+1) + float64(initrps)
 
 		// pt_val = float64(maxrps) * (math.Acos())
 
@@ -42,8 +42,8 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int) (pt_val float64) {
 
 func generate_intervals(t Rampup, dur int, initrps int, maxrps int) (result []float64, count int) {
 	rpss := []float64{}
-	for x := float64(initrps); x < float64(dur); x += 1.0 {
-		curr := calc_val(x, t, dur, maxrps)
+	for x := 0.0; x < float64(dur); x += 1.0 {
+		curr := calc_val(x, t, dur, maxrps, initrps)
 		rpss = append(rpss, curr)
 	}
 	sort.Float64s(rpss)
