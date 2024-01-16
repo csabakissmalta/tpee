@@ -85,6 +85,19 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	return f
 }
 
+func generateAdditionalTasks(req_count int, step int, ch chan *task.Task, er *execconf.ExecRequestsElem, rq *postman.Request) error {
+	go func() {
+		for i := len(ch); i < req_count; i++ {
+			curr_step := i * step
+			ch <- task.New(
+				task.WithPlannedExecTimeNanos(curr_step),
+				task.WithLabel(er.Name),
+			)
+		}
+	}()
+	return nil
+}
+
 func calc_periods(dur int, step int, er *execconf.ExecRequestsElem, rq *postman.Request) chan *task.Task {
 	// the count of markers is (duration - delay) * frequency
 	m_count := (dur - er.DelaySeconds) * er.Frequency

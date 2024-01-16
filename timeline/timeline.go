@@ -147,6 +147,11 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	// Create time markers - empty tasks
 	t.Rules.Frequency = tr.TargetRate
 
+	required_task_count := tr.TargetRate * (test_duration - int(time.Since(start_time).Seconds()))
+	if len(t.Tasks) < required_task_count {
+		generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules, t.RequestBlueprint)
+	}
+
 	new_tasks := calc_periods(dur, step, t.Rules, t.RequestBlueprint)
 
 	ch_to_empty := t.Tasks

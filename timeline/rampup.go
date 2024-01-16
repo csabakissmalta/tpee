@@ -29,11 +29,8 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int, initrps int) (pt_val fl
 	// sinusoidal increase
 	switch tp {
 	case SINUSOIDAL:
-		pt_val = float64(maxrps-initrps)/2*(math.Cos((math.Pi*x)/float64(dur)-math.Pi)+1) + float64(initrps)
-
-		// pt_val = float64(maxrps) * (math.Acos())
-
-		// pt_val = A * (math.Cos(math.Pi*(x-1)) + 1) / 2
+		rate_diff := float64(maxrps - initrps)
+		pt_val = float64(rate_diff)/2*(math.Cos((math.Pi*x)/float64(dur)-math.Pi)+1) + float64(initrps)
 	case LINEAR:
 		pt_val = A * x
 	}
@@ -46,7 +43,11 @@ func generate_intervals(t Rampup, dur int, initrps int, maxrps int) (result []fl
 		curr := calc_val(x, t, dur, maxrps, initrps)
 		rpss = append(rpss, curr)
 	}
-	sort.Float64s(rpss)
+	if initrps > maxrps {
+		sort.Sort(sort.Reverse(sort.Float64Slice(rpss)))
+	} else {
+		sort.Float64s(rpss)
+	}
 
 	for i := 1; i < len(rpss); i++ {
 		for f := 0; f <= int(rpss[i]); f++ {
