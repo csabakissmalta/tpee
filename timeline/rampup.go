@@ -39,7 +39,7 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int, initrps int) (pt_val fl
 
 func generate_intervals(t Rampup, dur int, initrps int, maxrps int) (result []float64, count int) {
 	rpss := []float64{}
-	for x := -1.0; x < float64(dur); x += 1.0 {
+	for x := -1.0; x <= float64(dur+1); x += 1.0 {
 		curr := calc_val(x, t, dur, maxrps, initrps)
 		rpss = append(rpss, curr)
 	}
