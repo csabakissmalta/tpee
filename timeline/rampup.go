@@ -39,18 +39,20 @@ func calc_val(x float64, tp Rampup, dur int, maxrps int, initrps int) (pt_val fl
 
 func generate_intervals(t Rampup, dur int, initrps int, maxrps int) (result []float64, count int) {
 	rpss := []float64{}
-	for x := 0.0; x < float64(dur); x += 1.0 {
+	for x := -1.0; x < float64(dur); x += 1.0 {
 		curr := calc_val(x, t, dur, maxrps, initrps)
 		rpss = append(rpss, curr)
 	}
+	init_rpss_step := 0
 	if initrps > maxrps {
 		sort.Sort(sort.Reverse(sort.Float64Slice(rpss)))
+		init_rpss_step = 0
 	} else {
 		sort.Float64s(rpss)
 	}
 
-	for i := 1; i < len(rpss); i++ {
-		for f := 0; f <= int(rpss[i]); f++ {
+	for i := init_rpss_step; i < len(rpss); i++ {
+		for f := 0; f < int(rpss[i]); f++ {
 			microstep := 1.0 / rpss[i]
 			result = append(result, float64(i)+float64(f)*microstep)
 		}
