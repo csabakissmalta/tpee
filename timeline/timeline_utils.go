@@ -85,7 +85,7 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	return f
 }
 
-func generateAdditionalTasks(req_count int, step int, ch chan *task.Task, er *execconf.ExecRequestsElem, rq *postman.Request) error {
+func generateAdditionalTasks(req_count int, step int, ch chan *task.Task, er *execconf.ExecRequestsElem) error {
 	go func() {
 		for i := len(ch); i < req_count; i++ {
 			curr_step := i * step

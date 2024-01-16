@@ -149,11 +149,11 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 
 	required_task_count := tr.TargetRate * (test_duration - int(time.Since(start_time).Seconds()))
 	if len(t.Tasks) < required_task_count {
-		generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules, t.RequestBlueprint)
+		generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules)
 	}
 
 	// t.Tasks = new_tasks
-	ticker.Reset(time.Duration(step))
+	go ticker.Reset(time.Duration(step))
 
 	// L:
 	//
