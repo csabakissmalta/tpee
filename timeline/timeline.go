@@ -152,22 +152,19 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 		generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules, t.RequestBlueprint)
 	}
 
-	// new_tasks := calc_periods(dur, step, t.Rules, t.RequestBlueprint)
-
-	ch_to_empty := t.Tasks
-
 	// t.Tasks = new_tasks
 	ticker.Reset(time.Duration(step))
 
-L:
-	for {
-		select {
-		case <-ch_to_empty:
-		default:
-			// close(ch_to_empty)
-			break L
-		}
-	}
+	// L:
+	//
+	//	for {
+	//		select {
+	//		case <-ch_to_empty:
+	//		default:
+	//			// close(ch_to_empty)
+	//			break L
+	//		}
+	//	}
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
