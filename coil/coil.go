@@ -41,37 +41,6 @@ type Coil struct {
 	StartTime               time.Time
 }
 
-type InstantTicker struct {
-    C <-chan time.Time
-    Stop func()
-}
-
-func NewInstantTicker(d time.Duration, ctx context.Context) *InstantTicker {
-    tickerChan := make(chan time.Time, 1)
-    tickerChan <- time.Now()
-
-    localCtx, cancel := context.WithCancel(ctx)
-    ticker := time.NewTicker(duration)
-
-    go func() {
-        defer ticker.Stop()
-        var now time.Time
-        for {
-            select {
-            case <- localCtx.Done():
-                return
-            case now = <-ticker.C:
-            }
-            select {
-            case <- localCtx.Done():
-                return
-            case tickerChan <- time
-        }
-    }
-
-    return InstantTicker{tickerChan, cancel}
-}
-
 type Option func(*Coil)
 
 func WithContext(ctx context.Context) Option {
