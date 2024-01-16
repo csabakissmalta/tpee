@@ -159,7 +159,7 @@ L:
 		select {
 		case <-ch_to_empty:
 		default:
-			close(ch_to_empty)
+			// close(ch_to_empty)
 			break L
 		}
 	}
