@@ -132,8 +132,8 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	}
 
 	// check env elements and load feeds if there is any feedValue type
-	elapsed := time.Since(start_time)
-	dur := test_duration - int(elapsed.Seconds())
+	// elapsed := time.Since(start_time)
+	// dur := test_duration - int(elapsed.Seconds())
 	// timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks) + 1000
 
 	// The step between the markers
@@ -152,11 +152,11 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 		generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules, t.RequestBlueprint)
 	}
 
-	new_tasks := calc_periods(dur, step, t.Rules, t.RequestBlueprint)
+	// new_tasks := calc_periods(dur, step, t.Rules, t.RequestBlueprint)
 
 	ch_to_empty := t.Tasks
 
-	t.Tasks = new_tasks
+	// t.Tasks = new_tasks
 	ticker.Reset(time.Duration(step))
 
 L:
