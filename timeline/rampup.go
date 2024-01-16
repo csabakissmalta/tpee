@@ -46,7 +46,7 @@ func generate_intervals(t Rampup, dur int, initrps int, maxrps int) (result []fl
 	init_rpss_step := 0
 	if initrps > maxrps {
 		sort.Sort(sort.Reverse(sort.Float64Slice(rpss)))
-		init_rpss_step = -1
+		init_rpss_step = 0
 	} else {
 		sort.Float64s(rpss)
 	}
