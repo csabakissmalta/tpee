@@ -43,6 +43,9 @@ type Timeline struct {
 
 	// Step duration
 	StepDuration int
+
+	// consume clock
+	ConsumeClock *time.Ticker
 }
 
 // rate change delta

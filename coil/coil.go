@@ -37,7 +37,6 @@ type Coil struct {
 	SessionStore            *sessionstore.Store
 	ResultsReportingChannel chan *task.Task
 	ExecutionMode           string
-	ConsumeClock            *time.Ticker
 	StartTime               time.Time
 }
 
@@ -195,7 +194,7 @@ func (c *Coil) consumeTimelineCompareMode(tl *timeline.Timeline, env []*execconf
 
 func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.ExecEnvironmentElem, res_ch chan *task.Task) {
 	// Set the timer with the duration of the step size
-	c.ConsumeClock = time.NewTicker(time.Duration(tl.StepDuration * int(time.Nanosecond)))
+	tl.ConsumeClock = time.NewTicker(time.Duration(tl.StepDuration * int(time.Nanosecond)))
 	done := make(chan bool)
 
 	if tl.Rules.DelaySeconds > 0 {
@@ -239,7 +238,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				select {
 				case <-done:
 					return
-				case <-c.ConsumeClock.C:
+				case <-tl.ConsumeClock.C:
 					// compose/execute task here
 					next = <-tl.Tasks
 					_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
@@ -265,7 +264,7 @@ func (c *Coil) UpdateTrafficRateFromNATSKVUpdate(tl_name string, tr *timeline.Tr
 	}
 
 	new_step_dur := tln.Repopulate(tr, orig_tl_dur, c.StartTime)
-	c.ConsumeClock.Stop()
-	c.ConsumeClock = time.NewTicker(new_step_dur)
+	tln.ConsumeClock.Stop()
+	tln.ConsumeClock = time.NewTicker(new_step_dur)
 	return nil
 }
