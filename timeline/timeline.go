@@ -153,7 +153,7 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	}
 
 	// t.Tasks = new_tasks
-	ticker.Reset(time.Duration(step))
+	ticker.Reset(time.Duration(t.StepDuration * int(time.Nanosecond)))
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
