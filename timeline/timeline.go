@@ -126,7 +126,7 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 // repopulate
 func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time.Time, ticker *time.Ticker) {
 	rmp_points := t.GenerateRampUpTimeline(int64(tr.TransitionRampupTimeSeconds), int64(t.Rules.Frequency), int64(tr.TargetRate), float64(time.Since(start_time).Seconds()), Rampup(tr.RampupType), t.Rules.Name)
-	t.RampupTasks = make(chan *task.Task, len(rmp_points))
+	// t.RampupTasks = make(chan *task.Task, len(rmp_points))
 	for _, p := range rmp_points {
 		t.RampupTasks <- p
 	}
@@ -154,17 +154,6 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 
 	// t.Tasks = new_tasks
 	ticker.Reset(time.Duration(step))
-
-	// L:
-	//
-	//	for {
-	//		select {
-	//		case <-ch_to_empty:
-	//		default:
-	//			// close(ch_to_empty)
-	//			break L
-	//		}
-	//	}
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {
