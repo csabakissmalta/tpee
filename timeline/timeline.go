@@ -153,7 +153,7 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	}
 
 	// t.Tasks = new_tasks
-	go ticker.Reset(time.Duration(step))
+	ticker.Reset(time.Duration(step))
 
 	// L:
 	//

@@ -254,19 +254,16 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 // --- NATS implementation for modifying traffic rate ---
 func (c *Coil) UpdateTrafficRateFromNATSKVUpdate(tl_name string, tr *timeline.Transition, orig_tl_dur int) error {
 	// impl
-	go func() {
-		var tln *timeline.Timeline
+	var tln *timeline.Timeline
 
-		// filter the timeline we need to change the rate
-		for _, tl := range c.Timelines {
-			if tl.Name == tl_name {
-				tln = tl
-				break
-			}
+	// filter the timeline we need to change the rate
+	for _, tl := range c.Timelines {
+		if tl.Name == tl_name {
+			tln = tl
+			break
 		}
+	}
 
-		tln.Repopulate(tr, orig_tl_dur, c.StartTime, c.ConsumeClock)
-	}()
-
+	tln.Repopulate(tr, orig_tl_dur, c.StartTime, c.ConsumeClock)
 	return nil
 }
