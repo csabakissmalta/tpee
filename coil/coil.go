@@ -264,6 +264,6 @@ func (c *Coil) UpdateTrafficRateFromNATSKVUpdate(tl_name string, tr *timeline.Tr
 		}
 	}
 
-	tln.Repopulate(tr, orig_tl_dur, c.StartTime, c.ConsumeClock)
+	c.ConsumeClock = tln.Repopulate(tr, orig_tl_dur, c.StartTime, c.ConsumeClock)
 	return nil
 }
