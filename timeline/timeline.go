@@ -151,9 +151,7 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	t.Rules.Frequency = tr.TargetRate
 
 	required_task_count := tr.TargetRate * (test_duration - int(time.Since(start_time).Seconds()))
-	if len(t.Tasks) < required_task_count {
-		generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules)
-	}
+	generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules)
 
 	return time.Duration(t.StepDuration * int(time.Nanosecond))
 }

@@ -249,7 +249,9 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 					planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 					dorm_period := planned_delta - int(corr)
 					if dorm_period < 0 {
-						dorm_period = 0
+						// dorm_period = 0
+						tl.CurrectTask = next
+						continue
 					}
 
 					time.Sleep(time.Duration(dorm_period))
@@ -276,8 +278,7 @@ func (c *Coil) UpdateTrafficRateFromNATSKVUpdate(tl_name string, tr *timeline.Tr
 		}
 	}
 
-	new_step_dur := tln.Repopulate(tr, orig_tl_dur, c.StartTime)
-	tln.ConsumeClock.Stop()
-	tln.ConsumeClock = time.NewTicker(new_step_dur)
+	tln.Repopulate(tr, orig_tl_dur, c.StartTime)
+
 	return nil
 }
