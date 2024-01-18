@@ -120,14 +120,14 @@ func (t *Timeline) Populate(dur int, r *postman.Request, env []*execconf.ExecEnv
 	t.StepDuration = step
 
 	// Create time markers - empty tasks
-	t.Tasks = calc_periods(dur, step, t.Rules, r)
+	t.Tasks = calc_periods(*rmp.DurationSeconds, dur, step, t.Rules, r)
 
 	// set the resulting postman request
 	t.RequestBlueprint = r
 }
 
 // repopulate
-func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time.Time) time.Duration {
+func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time.Time) chan *task.Task {
 	rmp_points := t.GenerateRampUpTimeline(int64(tr.TransitionRampupTimeSeconds), int64(t.Rules.Frequency), int64(tr.TargetRate), float64(time.Since(start_time).Seconds()), Rampup(tr.RampupType), t.Rules.Name)
 	// t.RampupTasks = make(chan *task.Task, len(rmp_points))
 	for _, p := range rmp_points {
@@ -135,7 +135,8 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	}
 
 	// check env elements and load feeds if there is any feedValue type
-	// elapsed := time.Since(start_time)
+	elapsed := time.Since(start_time)
+	elapsed_nanos := elapsed.Nanoseconds() + int64(tr.TransitionRampupTimeSeconds)*int64(time.Nanosecond)
 	// dur := test_duration - int(elapsed.Seconds())
 	// timeline_dimension := (dur-t.Rules.DelaySeconds)*t.Rules.Frequency + len(t.RampupTasks) + 1000
 
@@ -150,10 +151,9 @@ func (t *Timeline) Repopulate(tr *Transition, test_duration int, start_time time
 	// Create time markers - empty tasks
 	t.Rules.Frequency = tr.TargetRate
 
-	required_task_count := tr.TargetRate * (test_duration - int(time.Since(start_time).Seconds()))
-	generateAdditionalTasks(required_task_count, step, t.Tasks, t.Rules)
-
-	return time.Duration(t.StepDuration * int(time.Nanosecond))
+	// required_task_count := tr.TargetRate * test_duration
+	// elapsed_time_nano int, dur int, step int, er *execconf.ExecRequestsElem
+	return generateAdditionalTasks(int(elapsed_nanos), test_duration, step, t.Rules)
 }
 
 func CheckPostmanRequestAndValidateRequirements(pr *postman.Request, env []*execconf.ExecEnvironmentElem) error {

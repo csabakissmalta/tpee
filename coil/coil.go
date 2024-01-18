@@ -209,9 +209,8 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 	go func() {
 		if len(tl.RampupTasks) > 0 {
 			tl.CurrectTask = <-tl.RampupTasks
-			// compose/execute task here
-			// _, ses, _ := request.ComposeHttpRequest(tl.CurrectTask, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
-			// tl.CurrectTask.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
+		} else {
+			tl.CurrectTask = <-tl.Tasks
 		}
 
 		for {
@@ -223,8 +222,9 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 				dorm_period := planned_delta - int(corr)
 				if dorm_period < 0 {
-					tl.CurrectTask = next
 					// dorm_period = 0
+					log.Println("----------- NEGATIVE DORM PERIOD -----------")
+					tl.CurrectTask = next
 					continue
 				}
 
@@ -252,6 +252,7 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 					dorm_period := planned_delta - int(corr)
 					if dorm_period < 0 {
 						// dorm_period = 0
+						log.Println("----------- NEGATIVE DORM PERIOD -----------")
 						tl.CurrectTask = next
 						continue
 					}
@@ -280,7 +281,8 @@ func (c *Coil) UpdateTrafficRateFromNATSKVUpdate(tl_name string, tr *timeline.Tr
 		}
 	}
 
-	tln.Repopulate(tr, orig_tl_dur, c.StartTime)
+	tln.Tasks = tln.Repopulate(tr, orig_tl_dur, c.StartTime)
+	// c.consumeTimelineTimerMode(tln, c)
 
 	return nil
 }

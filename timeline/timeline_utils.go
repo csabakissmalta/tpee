@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	execconf "github.com/csabakissmalta/tpee/exec"
 	postman "github.com/csabakissmalta/tpee/postman"
@@ -85,7 +86,10 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 	return f
 }
 
-func generateAdditionalTasks(req_count int, step int, ch chan *task.Task, er *execconf.ExecRequestsElem) error {
+func generateAdditionalTasks(elapsed_time_nano int, dur int, step int, er *execconf.ExecRequestsElem) chan *task.Task {
+	ch := make(chan *task.Task, 10000)
+	m_count := (dur - er.DelaySeconds) * er.Frequency
+
 	go func() {
 	L:
 		for {
@@ -95,20 +99,22 @@ func generateAdditionalTasks(req_count int, step int, ch chan *task.Task, er *ex
 				break L
 			}
 		}
-		for i := len(ch); i < req_count; i++ {
-			curr_step := i * step
+		for i := len(ch); i < m_count; i++ {
+			curr_step := i*step + elapsed_time_nano
 			ch <- task.New(
 				task.WithPlannedExecTimeNanos(curr_step),
 				task.WithLabel(er.Name),
 			)
 		}
 	}()
-	return nil
+	return ch
 }
 
-func calc_periods(dur int, step int, er *execconf.ExecRequestsElem, rq *postman.Request) chan *task.Task {
+func calc_periods(rmp_dur int, dur int, step int, er *execconf.ExecRequestsElem, rq *postman.Request) chan *task.Task {
 	// the count of markers is (duration - delay) * frequency
 	m_count := (dur - er.DelaySeconds) * er.Frequency
+
+	rmp_nanos := rmp_dur * int(time.Nanosecond.Nanoseconds())
 
 	ch := make(chan *task.Task, 10000)
 	var i int = er.DelaySeconds * er.Frequency
@@ -117,7 +123,7 @@ func calc_periods(dur int, step int, er *execconf.ExecRequestsElem, rq *postman.
 		for {
 			switch {
 			case len(ch) < cap(ch):
-				curr_step := i * step
+				curr_step := i*step + rmp_nanos
 				ch <- task.New(
 					task.WithPlannedExecTimeNanos(curr_step),
 					task.WithLabel(er.Name),
