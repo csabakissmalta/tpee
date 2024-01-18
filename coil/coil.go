@@ -235,12 +235,25 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 
 				// rampupStopwatch = time.Since(testStartTime)
 			default:
+				// time.Sleep(time.Until(next))
 				select {
 				case <-done:
 					return
-				case <-tl.ConsumeClock.C:
+				// case <-tl.ConsumeClock.C:
+				case next = <-tl.Tasks:
 					// compose/execute task here
-					next = <-tl.Tasks
+					// next = <-tl.Tasks
+
+					elapsedTotal := time.Since(c.StartTime).Nanoseconds()
+					corr = elapsedTotal - int64(tl.CurrectTask.PlannedExecTimeNanos)
+					planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
+					dorm_period := planned_delta - int(corr)
+					if dorm_period < 0 {
+						dorm_period = 0
+					}
+
+					time.Sleep(time.Duration(dorm_period))
+
 					_, ses, _ := request.ComposeHttpRequest(next, *tl.RequestBlueprint, tl.Rules.DataPersistence.DataIn, tl.Rules, tl.Feeds, c.DataStore, c.SessionStore)
 					next.Execute(tl.HTTPClient, tl.Rules.DataPersistence.DataOut, tl.Rules.DataPersistence.DataIn, env, res_ch, *tl.Rules.CreatesSession, c.SessionStore, c.DataStore, ses)
 					tl.CurrectTask = next
