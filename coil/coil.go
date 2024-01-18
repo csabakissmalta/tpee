@@ -223,7 +223,9 @@ func (c *Coil) consumeTimelineTimerMode(tl *timeline.Timeline, env []*execconf.E
 				planned_delta := next.PlannedExecTimeNanos - tl.CurrectTask.PlannedExecTimeNanos
 				dorm_period := planned_delta - int(corr)
 				if dorm_period < 0 {
-					dorm_period = 0
+					tl.CurrectTask = next
+					// dorm_period = 0
+					continue
 				}
 
 				time.Sleep(time.Duration(dorm_period))
