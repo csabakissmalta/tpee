@@ -87,6 +87,14 @@ func load_feed(dim int, e *execconf.ExecEnvironmentElem) *Feed {
 
 func generateAdditionalTasks(req_count int, step int, ch chan *task.Task, er *execconf.ExecRequestsElem) error {
 	go func() {
+	L:
+		for {
+			select {
+			case <-ch:
+			default:
+				break L
+			}
+		}
 		for i := len(ch); i < req_count; i++ {
 			curr_step := i * step
 			ch <- task.New(
