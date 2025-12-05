@@ -130,5 +130,8 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 			r_ch <- ts
 		}
 	}()
+	if len(ts.Metrics.ErrorCategory) > 1 {
+		log.Printf(ts.Metrics.ErrorCategory)
+	}
 	return ts
 }
