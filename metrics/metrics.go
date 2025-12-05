@@ -125,14 +125,14 @@ func GetTransport() *http.Transport {
 	return transport
 }
 
-func GetConnPoolStats(tr *http.Transport) ConnPoolStats {
+func GetConnPoolStats(tr *http.Transport) *ConnPoolStats {
 	// Idle is approximated — exact values are not exposed
 	active := atomic.LoadInt64(&activeRequests)
 	idle := int64(tr.MaxIdleConnsPerHost) - active
 	if idle < 0 {
 		idle = 0
 	}
-	return ConnPoolStats{Active: int(active), Idle: int(idle)}
+	return &ConnPoolStats{Active: int(active), Idle: int(idle)}
 }
 
 func NewInstrumentedClient(redir bool) *http.Client {
