@@ -121,6 +121,10 @@ func endRequest() {
 	atomic.AddInt64(&activeRequests, -1)
 }
 
+func GetTransport() *http.Transport {
+	return transport
+}
+
 func GetConnPoolStats(tr *http.Transport) ConnPoolStats {
 	// Idle is approximated — exact values are not exposed
 	active := atomic.LoadInt64(&activeRequests)
