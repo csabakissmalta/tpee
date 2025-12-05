@@ -131,8 +131,8 @@ func NewInstrumentedClient(redir bool) *http.Client {
 		MaxIdleConnsPerHost:   2000,
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		ResponseHeaderTimeout: 5 * time.Second,
+		ExpectContinueTimeout: 15 * time.Second,
+		ResponseHeaderTimeout: 60 * time.Second,
 		DialContext: (&net.Dialer{
 			Timeout: 3 * time.Second,
 		}).DialContext,
