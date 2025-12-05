@@ -2,8 +2,11 @@
 
 package exec
 
-import "fmt"
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (j *ExecRequestsElemDataPersistenceDataInElem) UnmarshalJSON(b []byte) error {
@@ -35,12 +38,28 @@ func (j *ExecEnvironmentElem) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["key"]; !ok || v == nil {
+	kRaw, ok := raw["key"]
+	if !ok || kRaw == nil {
 		return fmt.Errorf("field key: required")
 	}
-	if v, ok := raw["value"]; !ok || v == nil {
+	vRaw, ok := raw["value"]
+	if !ok || vRaw == nil {
 		return fmt.Errorf("field value: required")
 	}
+
+	k, ok := kRaw.(string)
+	if !ok {
+		return fmt.Errorf("field key: must be a string")
+	}
+	v, ok := vRaw.(string)
+	if !ok {
+		return fmt.Errorf("field value: must be a string")
+	}
+
+	if err := os.Setenv(k, v); err != nil {
+		return err
+	}
+
 	type Plain ExecEnvironmentElem
 	var plain Plain
 	if err := json.Unmarshal(b, &plain); err != nil {
