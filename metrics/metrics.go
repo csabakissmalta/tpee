@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -62,6 +63,10 @@ func InstrumentedRoundTripper(rt http.RoundTripper) http.RoundTripper {
 		metrics := req.Context().Value("metrics").(*HTTPMetrics)
 		start := time.Now()
 
+		// track active and idle connections
+		startRequest()
+		defer endRequest()
+
 		var dnsStart, connectStart, tlsStart, waitHeadersStart time.Time
 
 		trace := &httptrace.ClientTrace{
@@ -102,6 +107,26 @@ type roundTripperFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return f(r)
+}
+
+var activeRequests int64
+
+func startRequest() {
+	atomic.AddInt64(&activeRequests, 1)
+}
+
+func endRequest() {
+	atomic.AddInt64(&activeRequests, -1)
+}
+
+func GetConnPoolStats(tr *http.Transport) ConnPoolStats {
+	// Idle is approximated — exact values are not exposed
+	active := atomic.LoadInt64(&activeRequests)
+	idle := int64(tr.MaxIdleConnsPerHost) - active
+	if idle < 0 {
+		idle = 0
+	}
+	return ConnPoolStats{Active: int(active), Idle: int(idle)}
 }
 
 // AI-generated -- doesn't work
