@@ -89,7 +89,10 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		if err != nil {
 			ts.Metrics.ErrorCategory = err.Error()
-			// log.Printf("ERROR: error executing request. %s", err.Error())
+			ts.Executed = true
+			if r_ch != nil {
+				r_ch <- ts
+			}
 			return
 		}
 
@@ -130,8 +133,5 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 			r_ch <- ts
 		}
 	}()
-	if len(ts.Metrics.ErrorCategory) > 1 {
-		log.Printf(ts.Metrics.ErrorCategory)
-	}
 	return ts
 }
