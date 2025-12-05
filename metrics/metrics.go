@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptrace"
+	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -33,6 +35,15 @@ type ConnPoolStats struct {
 var activeRequests int64
 
 var transport *http.Transport
+
+func getEnvInt(key string, def int) int {
+	if val, ok := os.LookupEnv(key); ok {
+		if parsed, err := strconv.Atoi(val); err == nil {
+			return parsed
+		}
+	}
+	return def
+}
 
 func classifyHTTPTimeout(err error) string {
 	if err == nil {
@@ -136,13 +147,21 @@ func GetConnPoolStats(tr *http.Transport) *ConnPoolStats {
 }
 
 func NewInstrumentedClient(redir bool) *http.Client {
+	// read env variables and set up the transport object
+	max_idle_conn_count := getEnvInt("MAX_IDLE_CONNECTIONS", 2000)
+	idle_conn_timeout_seconds := getEnvInt("IDLE_CONNECTION_TIMEOUT_SECONDS", 90)
+	tls_handshake_timeout_seconds := getEnvInt("TLS_HANDSHAKE_TIMEOUT_SECONDS", 10)
+	expect_continue_timeout_seconds := getEnvInt("EXPECT_CONTINUE_TIMEOUT_SECONDS", 15)
+	response_header_timeout_seconds := getEnvInt("RESPONSE_HEADER_TIMEOUT_SECONDS", 60)
+	http_client_timeout_seconds := getEnvInt("HTTP_CLIENT_TIMEOUT_SECONDS", 15)
+
 	transport = &http.Transport{
-		MaxIdleConns:          2000,
-		MaxIdleConnsPerHost:   2000,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 15 * time.Second,
-		ResponseHeaderTimeout: 60 * time.Second,
+		MaxIdleConns:          max_idle_conn_count,
+		MaxIdleConnsPerHost:   max_idle_conn_count,
+		IdleConnTimeout:       time.Duration(idle_conn_timeout_seconds) * time.Second,
+		TLSHandshakeTimeout:   time.Duration(tls_handshake_timeout_seconds) * time.Second,
+		ExpectContinueTimeout: time.Duration(expect_continue_timeout_seconds) * time.Second,
+		ResponseHeaderTimeout: time.Duration(response_header_timeout_seconds) * time.Second,
 		DialContext: (&net.Dialer{
 			Timeout: 3 * time.Second,
 		}).DialContext,
@@ -150,12 +169,12 @@ func NewInstrumentedClient(redir bool) *http.Client {
 
 	if redir {
 		return &http.Client{
-			Timeout:   30 * time.Second,
+			Timeout:   time.Duration(http_client_timeout_seconds) * time.Second,
 			Transport: InstrumentedRoundTripper(transport),
 		}
 	} else {
 		return &http.Client{
-			Timeout:   30 * time.Second,
+			Timeout:   time.Duration(http_client_timeout_seconds) * time.Second,
 			Transport: InstrumentedRoundTripper(transport),
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
