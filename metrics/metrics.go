@@ -30,6 +30,10 @@ type ConnPoolStats struct {
 	Active int
 }
 
+var activeRequests int64
+
+var transport *http.Transport
+
 func classifyHTTPTimeout(err error) string {
 	if err == nil {
 		return ""
@@ -109,8 +113,6 @@ func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return f(r)
 }
 
-var activeRequests int64
-
 func startRequest() {
 	atomic.AddInt64(&activeRequests, 1)
 }
@@ -129,29 +131,8 @@ func GetConnPoolStats(tr *http.Transport) ConnPoolStats {
 	return ConnPoolStats{Active: int(active), Idle: int(idle)}
 }
 
-// AI-generated -- doesn't work
-
-// func GetConnPoolStats(transport *http.Transport) ConnPoolStats {
-// 	idle := 0
-// 	active := 0
-
-// 	transport.Range(func(key, value interface{}) bool {
-// 		if pc, ok := value.(*http.Transport).IdleConnTimeout; ok {
-// 			fmt.Println(pc)
-// 		}
-// 		return true
-// 	})
-
-// 	// For Go <1.22: need reflection (Go doesn't expose idle/active counts)
-// 	// For now, you can measure:
-// 	//   - total inflight requests (you track)
-// 	//   - idle connections via Transport.IdleConnTimeout + MaxIdleConnsPerHost
-
-// 	return ConnPoolStats{Idle: idle, Active: active}
-// }
-
 func NewInstrumentedClient(redir bool) *http.Client {
-	tr := &http.Transport{
+	transport = &http.Transport{
 		MaxIdleConns:          2000,
 		MaxIdleConnsPerHost:   2000,
 		IdleConnTimeout:       90 * time.Second,
@@ -166,12 +147,12 @@ func NewInstrumentedClient(redir bool) *http.Client {
 	if redir {
 		return &http.Client{
 			Timeout:   30 * time.Second,
-			Transport: InstrumentedRoundTripper(tr),
+			Transport: InstrumentedRoundTripper(transport),
 		}
 	} else {
 		return &http.Client{
 			Timeout:   30 * time.Second,
-			Transport: InstrumentedRoundTripper(tr),
+			Transport: InstrumentedRoundTripper(transport),
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
