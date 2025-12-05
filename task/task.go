@@ -5,6 +5,7 @@
 package task
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -12,6 +13,7 @@ import (
 	data "github.com/csabakissmalta/tpee/data"
 	"github.com/csabakissmalta/tpee/datastore"
 	execconfig "github.com/csabakissmalta/tpee/exec"
+	"github.com/csabakissmalta/tpee/metrics"
 	sessionstore "github.com/csabakissmalta/tpee/sessionstore"
 )
 
@@ -39,6 +41,9 @@ type Task struct {
 
 	// rampup flag
 	IsRampup bool
+
+	// http metrics
+	Metrics *metrics.HTTPMetrics
 }
 
 type Option func(*Task)
@@ -62,7 +67,9 @@ func WithLabel(l string) Option {
 }
 
 func New(option ...Option) *Task {
-	t := &Task{}
+	t := &Task{
+		Metrics: &metrics.HTTPMetrics{},
+	}
 	for _, o := range option {
 		o(t)
 	}
@@ -74,6 +81,9 @@ func New(option ...Option) *Task {
 func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequestsElemDataPersistenceDataOutElem, data_in_rules []*execconfig.ExecRequestsElemDataPersistenceDataInElem, envvars []*execconfig.ExecEnvironmentElem, r_ch chan *Task, extract_session bool, ss *sessionstore.Store, ds *datastore.DataBroadcaster, session_in *sessionstore.Session) *Task {
 
 	go func() {
+		// create a context for the request - so metrics can be collected
+		ctx := context.WithValue(ts.Request.Context(), "metrics", ts.Metrics)
+		ts.Request = ts.Request.WithContext(ctx)
 		ts.ExecutionTime = time.Now()
 		res, err := c.Do(ts.Request)
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
