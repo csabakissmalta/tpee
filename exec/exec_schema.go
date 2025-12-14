@@ -14,7 +14,7 @@ type Exec struct {
 	DurationSeconds int `json:"duration-seconds" yaml:"duration-seconds" mapstructure:"duration-seconds"`
 
 	// Key/value pairs, defined for the test runtime.
-	Environment []ExecEnvironmentElem `json:"environment,omitempty" yaml:"environment,omitempty" mapstructure:"environment,omitempty"`
+	Environment []*ExecEnvironmentElem `json:"environment,omitempty" yaml:"environment,omitempty" mapstructure:"environment,omitempty"`
 
 	// The HDR Histogram output settings.
 	HdrHistogramSettings *ExecHdrHistogramSettings `json:"hdr-histogram-settings,omitempty" yaml:"hdr-histogram-settings,omitempty" mapstructure:"hdr-histogram-settings,omitempty"`
