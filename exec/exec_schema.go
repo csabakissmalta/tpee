@@ -8,35 +8,54 @@ import (
 	"os"
 )
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ExecRequestsElemDataPersistenceDataInElem) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["storage"]; !ok || v == nil {
-		return fmt.Errorf("field storage: required")
-	}
-	type Plain ExecRequestsElemDataPersistenceDataInElem
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	if v, ok := raw["retention"]; !ok || v == nil {
-		plain.Retention = false
-	}
-	*j = ExecRequestsElemDataPersistenceDataInElem(plain)
-	return nil
+// Perforamnce test execution configuration schema
+type Exec struct {
+	// Test duration in seconds
+	DurationSeconds int `json:"duration-seconds" yaml:"duration-seconds" mapstructure:"duration-seconds"`
+
+	// Key/value pairs, defined for the test runtime.
+	Environment []ExecEnvironmentElem `json:"environment,omitempty" yaml:"environment,omitempty" mapstructure:"environment,omitempty"`
+
+	// The HDR Histogram output settings.
+	HdrHistogramSettings *ExecHdrHistogramSettings `json:"hdr-histogram-settings,omitempty" yaml:"hdr-histogram-settings,omitempty" mapstructure:"hdr-histogram-settings,omitempty"`
+
+	// Optional settings for influxdb reporting.
+	InfluxdbSettings *ExecInfluxdbSettings `json:"influxdb-settings,omitempty" yaml:"influxdb-settings,omitempty" mapstructure:"influxdb-settings,omitempty"`
+
+	// Metrics corresponds to the JSON schema field "metrics".
+	Metrics *ExecMetrics `json:"metrics,omitempty" yaml:"metrics,omitempty" mapstructure:"metrics,omitempty"`
+
+	// Period, which starts at 0 and reaches the timelines traffic level.
+	Rampup *ExecRampup `json:"rampup,omitempty" yaml:"rampup,omitempty" mapstructure:"rampup,omitempty"`
+
+	// The requests and their rate definition corresponding with the Postman
+	// collection
+	Requests []ExecRequestsElem `json:"requests" yaml:"requests" mapstructure:"requests"`
+}
+
+type ExecEnvironmentElem struct {
+	// The env variable name
+	Key string `json:"key" yaml:"key" mapstructure:"key"`
+
+	// Enum for setting variables for later parsing and composition of the executable
+	// http.Request
+	Type *string `json:"type,omitempty" yaml:"type,omitempty" mapstructure:"type,omitempty"`
+
+	// The env variable value
+	Value string `json:"value" yaml:"value" mapstructure:"value"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ExecEnvironmentElem) UnmarshalJSON(b []byte) error {
+func (j *ExecEnvironmentElem) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
+	}
+	if _, ok := raw["key"]; raw != nil && !ok {
+		return fmt.Errorf("field key in ExecEnvironmentElem: required")
+	}
+	if _, ok := raw["value"]; raw != nil && !ok {
+		return fmt.Errorf("field value in ExecEnvironmentElem: required")
 	}
 	kRaw, ok := raw["key"]
 	if !ok || kRaw == nil {
@@ -62,270 +81,570 @@ func (j *ExecEnvironmentElem) UnmarshalJSON(b []byte) error {
 
 	type Plain ExecEnvironmentElem
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
 	*j = ExecEnvironmentElem(plain)
 	return nil
 }
 
-// Perforamnce test execution configuration schema
-type Exec struct {
-	// Test duration in seconds
-	DurationSeconds int `json:"duration-seconds"`
+// The HDR Histogram output settings.
+type ExecHdrHistogramSettings struct {
+	// The base path, where the files should be saved
+	BaseOutPath string `json:"base-out-path" yaml:"base-out-path" mapstructure:"base-out-path"`
 
-	// Key/value pairs, defined for the test runtime.
-	Environment []*ExecEnvironmentElem `json:"environment,omitempty"`
-
-	// The HDR Histogram output settings.
-	HdrHistogramSettings *ExecHdrHistogramSettings `json:"hdr-histogram-settings,omitempty"`
-
-	// Optional settings for influxdb reporting.
-	InfluxdbSettings *ExecInfluxdbSettings `json:"influxdb-settings,omitempty"`
-
-	// Period, which starts at 0 and reaches the timelines traffic level.
-	Rampup *ExecRampup `json:"rampup,omitempty"`
-
-	// The requests and their rate definition corresponding with the Postman
-	// collection
-	Requests []*ExecRequestsElem `json:"requests"`
+	// The additional identifier for the set of files from the test. Can be the tesyed
+	// version of subject.
+	VersionLabel string `json:"version-label" yaml:"version-label" mapstructure:"version-label"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ExecHdrHistogramSettings) UnmarshalJSON(b []byte) error {
+func (j *ExecHdrHistogramSettings) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["base-out-path"]; !ok || v == nil {
-		return fmt.Errorf("field base-out-path: required")
+	if _, ok := raw["base-out-path"]; raw != nil && !ok {
+		return fmt.Errorf("field base-out-path in ExecHdrHistogramSettings: required")
 	}
-	if v, ok := raw["version-label"]; !ok || v == nil {
-		return fmt.Errorf("field version-label: required")
+	if _, ok := raw["version-label"]; raw != nil && !ok {
+		return fmt.Errorf("field version-label in ExecHdrHistogramSettings: required")
 	}
 	type Plain ExecHdrHistogramSettings
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
 	*j = ExecHdrHistogramSettings(plain)
 	return nil
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (j *ExecRequestsElem) UnmarshalJSON(b []byte) error {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if v, ok := raw["delay-seconds"]; !ok || v == nil {
-		return fmt.Errorf("field delay-seconds: required")
-	}
-	if v, ok := raw["frequency"]; !ok || v == nil {
-		return fmt.Errorf("field frequency: required")
-	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
-	}
-	if v, ok := raw["order-number"]; !ok || v == nil {
-		return fmt.Errorf("field order-number: required")
-	}
-	type Plain ExecRequestsElem
-	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
-		return err
-	}
-	if v, ok := raw["follow-redirects"]; !ok || v == nil {
-		plain.FollowRedirects = true
-	}
-	*j = ExecRequestsElem(plain)
-	return nil
+// Optional settings for influxdb reporting.
+type ExecInfluxdbSettings struct {
+	// The database/bucket name.
+	Database string `json:"database" yaml:"database" mapstructure:"database"`
+
+	// The database host.
+	DatabaseHost string `json:"database-host" yaml:"database-host" mapstructure:"database-host"`
+
+	// The organisation set for the database instance.
+	DatabaseOrg string `json:"database-org" yaml:"database-org" mapstructure:"database-org"`
+
+	// Influxdb2 uses tokens, this is the one to connect to the db.
+	DatabaseToken string `json:"database-token" yaml:"database-token" mapstructure:"database-token"`
+
+	// Measurement for the test data.
+	Measurement string `json:"measurement" yaml:"measurement" mapstructure:"measurement"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ExecInfluxdbSettings) UnmarshalJSON(b []byte) error {
+func (j *ExecInfluxdbSettings) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["database"]; !ok || v == nil {
-		return fmt.Errorf("field database: required")
+	if _, ok := raw["database"]; raw != nil && !ok {
+		return fmt.Errorf("field database in ExecInfluxdbSettings: required")
 	}
-	if v, ok := raw["database-host"]; !ok || v == nil {
-		return fmt.Errorf("field database-host: required")
+	if _, ok := raw["database-host"]; raw != nil && !ok {
+		return fmt.Errorf("field database-host in ExecInfluxdbSettings: required")
 	}
-	if v, ok := raw["database-org"]; !ok || v == nil {
-		return fmt.Errorf("field database-org: required")
+	if _, ok := raw["database-org"]; raw != nil && !ok {
+		return fmt.Errorf("field database-org in ExecInfluxdbSettings: required")
 	}
-	if v, ok := raw["database-token"]; !ok || v == nil {
-		return fmt.Errorf("field database-token: required")
+	if _, ok := raw["database-token"]; raw != nil && !ok {
+		return fmt.Errorf("field database-token in ExecInfluxdbSettings: required")
 	}
-	if v, ok := raw["measurement"]; !ok || v == nil {
-		return fmt.Errorf("field measurement: required")
+	if _, ok := raw["measurement"]; raw != nil && !ok {
+		return fmt.Errorf("field measurement in ExecInfluxdbSettings: required")
 	}
 	type Plain ExecInfluxdbSettings
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
 	*j = ExecInfluxdbSettings(plain)
 	return nil
 }
 
+type ExecMetrics struct {
+	// Http corresponds to the JSON schema field "http".
+	Http ExecMetricsHttp `json:"http" yaml:"http" mapstructure:"http"`
+}
+
+type ExecMetricsHttp struct {
+	// ConnectionLatency corresponds to the JSON schema field "connection-latency".
+	ConnectionLatency *ExecMetricsHttpConnectionLatency `json:"connection-latency,omitempty" yaml:"connection-latency,omitempty" mapstructure:"connection-latency,omitempty"`
+
+	// ConnectionPoolStats corresponds to the JSON schema field
+	// "connection-pool-stats".
+	ConnectionPoolStats ExecMetricsHttpConnectionPoolStats `json:"connection-pool-stats" yaml:"connection-pool-stats" mapstructure:"connection-pool-stats"`
+
+	// DnsLatency corresponds to the JSON schema field "dns-latency".
+	DnsLatency ExecMetricsHttpDnsLatency `json:"dns-latency" yaml:"dns-latency" mapstructure:"dns-latency"`
+
+	// TlsLatency corresponds to the JSON schema field "tls-latency".
+	TlsLatency ExecMetricsHttpTlsLatency `json:"tls-latency" yaml:"tls-latency" mapstructure:"tls-latency"`
+
+	// TotalLatency corresponds to the JSON schema field "total-latency".
+	TotalLatency ExecMetricsHttpTotalLatency `json:"total-latency" yaml:"total-latency" mapstructure:"total-latency"`
+
+	// WaitResponseHeader corresponds to the JSON schema field "wait-response-header".
+	WaitResponseHeader ExecMetricsHttpWaitResponseHeader `json:"wait-response-header" yaml:"wait-response-header" mapstructure:"wait-response-header"`
+}
+
+type ExecMetricsHttpConnectionLatency struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
+
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types" yaml:"types" mapstructure:"types"`
+}
+
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(b []byte) error {
+func (j *ExecMetricsHttpConnectionLatency) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["content-type"]; !ok || v == nil {
-		return fmt.Errorf("field content-type: required")
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpConnectionLatency: required")
 	}
-	if v, ok := raw["name"]; !ok || v == nil {
-		return fmt.Errorf("field name: required")
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpConnectionLatency: required")
 	}
-	if v, ok := raw["storage"]; !ok || v == nil {
-		return fmt.Errorf("field storage: required")
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpConnectionLatency: required")
 	}
-	if v, ok := raw["target"]; !ok || v == nil {
-		return fmt.Errorf("field target: required")
-	}
-	type Plain ExecRequestsElemDataPersistenceDataOutElem
+	type Plain ExecMetricsHttpConnectionLatency
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
-	*j = ExecRequestsElemDataPersistenceDataOutElem(plain)
+	*j = ExecMetricsHttpConnectionLatency(plain)
 	return nil
 }
 
-type ExecEnvironmentElem struct {
-	// The env variable name
-	Key string `json:"key"`
+type ExecMetricsHttpConnectionPoolStats struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
 
-	// Enum for setting variables for later parsing and composition of the executable
-	// http.Request
-	Type *string `json:"type,omitempty"`
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
 
-	// The env variable value
-	Value string `json:"value"`
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types" yaml:"types" mapstructure:"types"`
 }
 
-// The HDR Histogram output settings.
-type ExecHdrHistogramSettings struct {
-	// The base path, where the files should be saved
-	BaseOutPath string `json:"base-out-path"`
-
-	// The additional identifier for the set of files from the test. Can be the tesyed
-	// version of subject.
-	VersionLabel string `json:"version-label"`
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttpConnectionPoolStats) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpConnectionPoolStats: required")
+	}
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpConnectionPoolStats: required")
+	}
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpConnectionPoolStats: required")
+	}
+	type Plain ExecMetricsHttpConnectionPoolStats
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttpConnectionPoolStats(plain)
+	return nil
 }
 
-// Optional settings for influxdb reporting.
-type ExecInfluxdbSettings struct {
-	// The database/bucket name.
-	Database string `json:"database"`
+type ExecMetricsHttpDnsLatency struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
 
-	// The database host.
-	DatabaseHost string `json:"database-host"`
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
 
-	// The organisation set for the database instance.
-	DatabaseOrg string `json:"database-org"`
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types" yaml:"types" mapstructure:"types"`
+}
 
-	// Influxdb2 uses tokens, this is the one to connect to the db.
-	DatabaseToken string `json:"database-token"`
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttpDnsLatency) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpDnsLatency: required")
+	}
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpDnsLatency: required")
+	}
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpDnsLatency: required")
+	}
+	type Plain ExecMetricsHttpDnsLatency
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttpDnsLatency(plain)
+	return nil
+}
 
-	// Measurement for the test data.
-	Measurement string `json:"measurement"`
+type ExecMetricsHttpTlsLatency struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
+
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types" yaml:"types" mapstructure:"types"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttpTlsLatency) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpTlsLatency: required")
+	}
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpTlsLatency: required")
+	}
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpTlsLatency: required")
+	}
+	type Plain ExecMetricsHttpTlsLatency
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttpTlsLatency(plain)
+	return nil
+}
+
+type ExecMetricsHttpTotalLatency struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
+
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types" yaml:"types" mapstructure:"types"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttpTotalLatency) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpTotalLatency: required")
+	}
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpTotalLatency: required")
+	}
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpTotalLatency: required")
+	}
+	type Plain ExecMetricsHttpTotalLatency
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttpTotalLatency(plain)
+	return nil
+}
+
+type ExecMetricsHttpWaitResponseHeader struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
+
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types" yaml:"types" mapstructure:"types"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttpWaitResponseHeader) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpWaitResponseHeader: required")
+	}
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpWaitResponseHeader: required")
+	}
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpWaitResponseHeader: required")
+	}
+	type Plain ExecMetricsHttpWaitResponseHeader
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttpWaitResponseHeader(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttp) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["connection-pool-stats"]; raw != nil && !ok {
+		return fmt.Errorf("field connection-pool-stats in ExecMetricsHttp: required")
+	}
+	if _, ok := raw["dns-latency"]; raw != nil && !ok {
+		return fmt.Errorf("field dns-latency in ExecMetricsHttp: required")
+	}
+	if _, ok := raw["tls-latency"]; raw != nil && !ok {
+		return fmt.Errorf("field tls-latency in ExecMetricsHttp: required")
+	}
+	if _, ok := raw["total-latency"]; raw != nil && !ok {
+		return fmt.Errorf("field total-latency in ExecMetricsHttp: required")
+	}
+	if _, ok := raw["wait-response-header"]; raw != nil && !ok {
+		return fmt.Errorf("field wait-response-header in ExecMetricsHttp: required")
+	}
+	type Plain ExecMetricsHttp
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttp(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetrics) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["http"]; raw != nil && !ok {
+		return fmt.Errorf("field http in ExecMetrics: required")
+	}
+	type Plain ExecMetrics
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetrics(plain)
+	return nil
 }
 
 // Period, which starts at 0 and reaches the timelines traffic level.
 type ExecRampup struct {
 	// Rampup period duration.
-	DurationSeconds *int `json:"duration-seconds,omitempty"`
+	DurationSeconds *int `json:"duration-seconds,omitempty" yaml:"duration-seconds,omitempty" mapstructure:"duration-seconds,omitempty"`
 
 	// RampupType corresponds to the JSON schema field "rampup-type".
-	RampupType *string `json:"rampup-type,omitempty"`
+	RampupType *string `json:"rampup-type,omitempty" yaml:"rampup-type,omitempty" mapstructure:"rampup-type,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecRampup) UnmarshalJSON(value []byte) error {
+	type Plain ExecRampup
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	if plain.DurationSeconds != nil && 0 > *plain.DurationSeconds {
+		return fmt.Errorf("field %s: must be >= %v", "duration-seconds", 0)
+	}
+	*j = ExecRampup(plain)
+	return nil
 }
 
 type ExecRequestsElem struct {
 	// Definition for the request, whether creates session
-	CreatesSession *bool `json:"creates-session,omitempty"`
-
-	// Definition for the request, whether uses session
-	UsesSession *bool `json:"uses-session,omitempty"`
+	CreatesSession *bool `json:"creates-session,omitempty" yaml:"creates-session,omitempty" mapstructure:"creates-session,omitempty"`
 
 	// The wrapper to define sticky data dependency and generation properties.
-	DataPersistence *ExecRequestsElemDataPersistence `json:"data-persistence,omitempty"`
+	DataPersistence *ExecRequestsElemDataPersistence `json:"data-persistence,omitempty" yaml:"data-persistence,omitempty" mapstructure:"data-persistence,omitempty"`
 
 	// Delayed execution wait time before start - in seconds.
-	DelaySeconds int `json:"delay-seconds"`
+	DelaySeconds int `json:"delay-seconds" yaml:"delay-seconds" mapstructure:"delay-seconds"`
 
 	// Set the client to follow the redirects or not.
-	FollowRedirects bool `json:"follow-redirects,omitempty"`
+	FollowRedirects bool `json:"follow-redirects,omitempty" yaml:"follow-redirects,omitempty" mapstructure:"follow-redirects,omitempty"`
 
 	// Per second execution rate.
-	Frequency int `json:"frequency"`
+	Frequency int `json:"frequency" yaml:"frequency" mapstructure:"frequency"`
 
 	// The request's name from the Postman collection.
-	Name string `json:"name"`
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
 
 	// Order number of the request. Can be set for maintaining data dependency.
-	OrderNumber int `json:"order-number"`
+	OrderNumber int `json:"order-number" yaml:"order-number" mapstructure:"order-number"`
+
+	// Definition for the request, whether uses session
+	UsesSession *bool `json:"uses-session,omitempty" yaml:"uses-session,omitempty" mapstructure:"uses-session,omitempty"`
 }
 
 // The wrapper to define sticky data dependency and generation properties.
 type ExecRequestsElemDataPersistence struct {
 	// Data variable names, what the request is dependant on.
-	DataIn []*ExecRequestsElemDataPersistenceDataInElem `json:"data-in,omitempty"`
+	DataIn []ExecRequestsElemDataPersistenceDataInElem `json:"data-in,omitempty" yaml:"data-in,omitempty" mapstructure:"data-in,omitempty"`
 
 	// Data variable names, generated/set from the request/response
-	DataOut []*ExecRequestsElemDataPersistenceDataOutElem `json:"data-out,omitempty"`
+	DataOut []ExecRequestsElemDataPersistenceDataOutElem `json:"data-out,omitempty" yaml:"data-out,omitempty" mapstructure:"data-out,omitempty"`
 }
 
 type ExecRequestsElemDataPersistenceDataInElem struct {
 	// The name of the data var.
-	Name string `json:"name"`
-
-	// Storage corresponds to the JSON schema field "storage".
-	Storage interface{} `json:"storage"`
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
 
 	// Whether the objects need to be disposed after usage.
-	Retention bool `json:"retention"`
+	Retention bool `json:"retention,omitempty" yaml:"retention,omitempty" mapstructure:"retention,omitempty"`
+
+	// Storage corresponds to the JSON schema field "storage".
+	Storage interface{} `json:"storage" yaml:"storage" mapstructure:"storage"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecRequestsElemDataPersistenceDataInElem) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["name"]; raw != nil && !ok {
+		return fmt.Errorf("field name in ExecRequestsElemDataPersistenceDataInElem: required")
+	}
+	if _, ok := raw["storage"]; raw != nil && !ok {
+		return fmt.Errorf("field storage in ExecRequestsElemDataPersistenceDataInElem: required")
+	}
+	type Plain ExecRequestsElemDataPersistenceDataInElem
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["retention"]; !ok || v == nil {
+		plain.Retention = false
+	}
+	*j = ExecRequestsElemDataPersistenceDataInElem(plain)
+	return nil
 }
 
 // The precise definition for the implementation where to find the required value
 // to save.
 type ExecRequestsElemDataPersistenceDataOutElem struct {
 	// Should be set to be able to determine the way to extract the value.
-	ContentType string `json:"content-type"`
+	ContentType string `json:"content-type" yaml:"content-type" mapstructure:"content-type"`
 
 	// The name of the property the value of is required
-	Name string `json:"name"`
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
 
 	// Storage corresponds to the JSON schema field "storage".
-	Storage interface{} `json:"storage"`
+	Storage interface{} `json:"storage" yaml:"storage" mapstructure:"storage"`
 
 	// Target corresponds to the JSON schema field "target".
-	Target interface{} `json:"target"`
+	Target interface{} `json:"target" yaml:"target" mapstructure:"target"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *Exec) UnmarshalJSON(b []byte) error {
+func (j *ExecRequestsElemDataPersistenceDataOutElem) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
-	if err := json.Unmarshal(b, &raw); err != nil {
+	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["duration-seconds"]; !ok || v == nil {
-		return fmt.Errorf("field duration-seconds: required")
+	if _, ok := raw["content-type"]; raw != nil && !ok {
+		return fmt.Errorf("field content-type in ExecRequestsElemDataPersistenceDataOutElem: required")
 	}
-	if v, ok := raw["requests"]; !ok || v == nil {
-		return fmt.Errorf("field requests: required")
+	if _, ok := raw["name"]; raw != nil && !ok {
+		return fmt.Errorf("field name in ExecRequestsElemDataPersistenceDataOutElem: required")
+	}
+	if _, ok := raw["storage"]; raw != nil && !ok {
+		return fmt.Errorf("field storage in ExecRequestsElemDataPersistenceDataOutElem: required")
+	}
+	if _, ok := raw["target"]; raw != nil && !ok {
+		return fmt.Errorf("field target in ExecRequestsElemDataPersistenceDataOutElem: required")
+	}
+	type Plain ExecRequestsElemDataPersistenceDataOutElem
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecRequestsElemDataPersistenceDataOutElem(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecRequestsElem) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["delay-seconds"]; raw != nil && !ok {
+		return fmt.Errorf("field delay-seconds in ExecRequestsElem: required")
+	}
+	if _, ok := raw["frequency"]; raw != nil && !ok {
+		return fmt.Errorf("field frequency in ExecRequestsElem: required")
+	}
+	if _, ok := raw["name"]; raw != nil && !ok {
+		return fmt.Errorf("field name in ExecRequestsElem: required")
+	}
+	if _, ok := raw["order-number"]; raw != nil && !ok {
+		return fmt.Errorf("field order-number in ExecRequestsElem: required")
+	}
+	type Plain ExecRequestsElem
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	if 0 > plain.DelaySeconds {
+		return fmt.Errorf("field %s: must be >= %v", "delay-seconds", 0)
+	}
+	if v, ok := raw["follow-redirects"]; !ok || v == nil {
+		plain.FollowRedirects = true
+	}
+	if 1 > plain.Frequency {
+		return fmt.Errorf("field %s: must be >= %v", "frequency", 1)
+	}
+	*j = ExecRequestsElem(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Exec) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["duration-seconds"]; raw != nil && !ok {
+		return fmt.Errorf("field duration-seconds in Exec: required")
+	}
+	if _, ok := raw["requests"]; raw != nil && !ok {
+		return fmt.Errorf("field requests in Exec: required")
 	}
 	type Plain Exec
 	var plain Plain
-	if err := json.Unmarshal(b, &plain); err != nil {
+	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
+	}
+	if 1 > plain.DurationSeconds {
+		return fmt.Errorf("field %s: must be >= %v", "duration-seconds", 1)
+	}
+	if plain.Requests != nil && len(plain.Requests) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "requests", 1)
 	}
 	*j = Exec(plain)
 	return nil
