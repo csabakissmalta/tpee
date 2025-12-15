@@ -69,10 +69,77 @@ func (j *ExecEnvironmentElem) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type ExecMetricsHttpElem struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description"`
+
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled"`
+
+	// Name corresponds to the JSON schema field "name".
+	Name string `json:"name"`
+
+	// Types corresponds to the JSON schema field "types".
+	Types []string `json:"types"`
+}
+
+type ExecMetrics struct {
+	// Http corresponds to the JSON schema field "http".
+	Http []*ExecMetricsHttpElem `json:"http"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetricsHttpElem) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["description"]; raw != nil && !ok {
+		return fmt.Errorf("field description in ExecMetricsHttpElem: required")
+	}
+	if _, ok := raw["enabled"]; raw != nil && !ok {
+		return fmt.Errorf("field enabled in ExecMetricsHttpElem: required")
+	}
+	if _, ok := raw["name"]; raw != nil && !ok {
+		return fmt.Errorf("field name in ExecMetricsHttpElem: required")
+	}
+	if _, ok := raw["types"]; raw != nil && !ok {
+		return fmt.Errorf("field types in ExecMetricsHttpElem: required")
+	}
+	type Plain ExecMetricsHttpElem
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetricsHttpElem(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExecMetrics) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["http"]; raw != nil && !ok {
+		return fmt.Errorf("field http in ExecMetrics: required")
+	}
+	type Plain ExecMetrics
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = ExecMetrics(plain)
+	return nil
+}
+
 // Perforamnce test execution configuration schema
 type Exec struct {
 	// Test duration in seconds
 	DurationSeconds int `json:"duration-seconds"`
+
+	// Metrics corresponds to the JSON schema field "metrics".
+	Metrics *ExecMetrics `json:"metrics"`
 
 	// Key/value pairs, defined for the test runtime.
 	Environment []*ExecEnvironmentElem `json:"environment,omitempty"`
