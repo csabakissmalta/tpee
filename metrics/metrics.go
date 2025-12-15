@@ -18,13 +18,18 @@ import (
 // --- thiis is for tracking timeouts
 // and other network-relatted issues ---
 type HTTPMetrics struct {
-	DNSLatency         time.Duration
-	ConnectLatency     time.Duration
-	TLSLatency         time.Duration
-	WaitResponseHeader time.Duration
-	TotalLatency       time.Duration
+	DNSLatency         Metric
+	ConnectLatency     Metric
+	TLSLatency         Metric
+	WaitResponseHeader Metric
+	TotalLatency       Metric
 	ErrorCategory      string
 	RetryCount         int
+}
+
+type Metric struct {
+	Name     string
+	TimeUnit time.Duration
 }
 
 type ConnPoolStats struct {
@@ -89,20 +94,24 @@ func InstrumentedRoundTripper(rt http.RoundTripper) http.RoundTripper {
 				dnsStart = time.Now()
 			},
 			DNSDone: func(d httptrace.DNSDoneInfo) {
-				metrics.DNSLatency = time.Since(dnsStart)
+				metrics.DNSLatency.TimeUnit = time.Since(dnsStart)
+				metrics.DNSLatency.Name = "dns-latency"
 			},
 			ConnectStart: func(network, addr string) {
 				connectStart = time.Now()
 			},
 			ConnectDone: func(network, addr string, err error) {
-				metrics.ConnectLatency = time.Since(connectStart)
+				metrics.ConnectLatency.TimeUnit = time.Since(connectStart)
+				metrics.ConnectLatency.Name = "connection-latency"
 			},
 			TLSHandshakeStart: func() { tlsStart = time.Now() },
 			TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
-				metrics.TLSLatency = time.Since(tlsStart)
+				metrics.TLSLatency.TimeUnit = time.Since(tlsStart)
+				metrics.TLSLatency.Name = "tls-latency"
 			},
 			GotFirstResponseByte: func() {
-				metrics.WaitResponseHeader = time.Since(waitHeadersStart)
+				metrics.WaitResponseHeader.TimeUnit = time.Since(waitHeadersStart)
+				metrics.WaitResponseHeader.Name = "wait-response-header"
 			},
 		}
 
@@ -111,7 +120,7 @@ func InstrumentedRoundTripper(rt http.RoundTripper) http.RoundTripper {
 
 		resp, err := rt.RoundTrip(req)
 
-		metrics.TotalLatency = time.Since(start)
+		metrics.TotalLatency.TimeUnit = time.Since(start)
 		metrics.ErrorCategory = classifyHTTPTimeout(err)
 
 		return resp, err
