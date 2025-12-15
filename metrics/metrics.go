@@ -121,6 +121,7 @@ func InstrumentedRoundTripper(rt http.RoundTripper) http.RoundTripper {
 		resp, err := rt.RoundTrip(req)
 
 		metrics.TotalLatency.TimeUnit = time.Since(start)
+		metrics.TotalLatency.Name = "total-latency"
 		metrics.ErrorCategory = classifyHTTPTimeout(err)
 
 		return resp, err
