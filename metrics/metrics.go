@@ -24,12 +24,12 @@ type HTTPMetrics struct {
 	WaitResponseHeader Metric
 	TotalLatency       Metric
 	ErrorCategory      string
+	Source             string
 	RetryCount         int
 }
 
 type Metric struct {
 	Name     string
-	Source   string
 	TimeUnit time.Duration
 }
 
@@ -79,9 +79,10 @@ func classifyHTTPTimeout(err error) string {
 	return "other_error"
 }
 
-func InstrumentedRoundTripper(rt http.RoundTripper) http.RoundTripper {
+func InstrumentedRoundTripper(rt http.RoundTripper, req_name string) http.RoundTripper {
 	return roundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		metrics := req.Context().Value("metrics").(*HTTPMetrics)
+		metrics.Source = req_name
 		start := time.Now()
 
 		// track active and idle connections
@@ -157,7 +158,7 @@ func GetConnPoolStats(tr *http.Transport) *ConnPoolStats {
 	return &ConnPoolStats{Active: int(active), Idle: int(idle)}
 }
 
-func NewInstrumentedClient(redir bool) *http.Client {
+func NewInstrumentedClient(redir bool, tl string) *http.Client {
 	// read env variables and set up the transport object
 	max_idle_conn_count := getEnvInt("MAX_IDLE_CONNECTIONS", 2000)
 	idle_conn_timeout_seconds := getEnvInt("IDLE_CONNECTION_TIMEOUT_SECONDS", 90)
@@ -181,12 +182,12 @@ func NewInstrumentedClient(redir bool) *http.Client {
 	if redir {
 		return &http.Client{
 			Timeout:   time.Duration(http_client_timeout_seconds) * time.Second,
-			Transport: InstrumentedRoundTripper(transport),
+			Transport: InstrumentedRoundTripper(transport, tl),
 		}
 	} else {
 		return &http.Client{
 			Timeout:   time.Duration(http_client_timeout_seconds) * time.Second,
-			Transport: InstrumentedRoundTripper(transport),
+			Transport: InstrumentedRoundTripper(transport, tl),
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
