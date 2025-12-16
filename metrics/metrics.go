@@ -29,6 +29,7 @@ type HTTPMetrics struct {
 
 type Metric struct {
 	Name     string
+	Source   string
 	TimeUnit time.Duration
 }
 
