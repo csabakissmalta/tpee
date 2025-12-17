@@ -51,7 +51,7 @@ func getEnvInt(key string, def int) int {
 	return def
 }
 
-func classifyHTTPTimeout(err error) string {
+func ClassifyHTTPTimeout(err error) string {
 	if err == nil {
 		return ""
 	}
@@ -124,7 +124,7 @@ func InstrumentedRoundTripper(rt http.RoundTripper, req_name string) http.RoundT
 
 		metrics.TotalLatency.TimeUnit = time.Since(start)
 		metrics.TotalLatency.Name = "total-latency"
-		metrics.ErrorCategory = classifyHTTPTimeout(err)
+		metrics.ErrorCategory = ClassifyHTTPTimeout(err)
 
 		return resp, err
 	})

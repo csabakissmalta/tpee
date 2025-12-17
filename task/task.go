@@ -88,7 +88,7 @@ func (ts *Task) Execute(c *http.Client, extract_rules []*execconfig.ExecRequests
 		res, err := c.Do(ts.Request)
 		ts.ResponseTime = time.Since(ts.ExecutionTime).Milliseconds()
 		if err != nil {
-			ts.Metrics.ErrorCategory = err.Error()
+			ts.Metrics.ErrorCategory = metrics.ClassifyHTTPTimeout(err)
 			ts.Executed = true
 			if r_ch != nil {
 				r_ch <- ts
